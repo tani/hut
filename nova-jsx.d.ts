@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Masaya Taniguchi
 
 export declare const Fragment: unique symbol;
+export declare const NotFound: unique symbol;
 
 export type Child =
   | string
@@ -72,9 +73,10 @@ export type RouteProps<State extends object> = {
   state: State;
 };
 
-export type Router<State extends object> = {
-  routes: Record<string, (props: RouteProps<State>) => Child>;
-  notFound?: (props: RouteProps<State>) => Child;
+export type View<State extends object> = (props: RouteProps<State>) => Child;
+
+export type Router<State extends object> = Record<string, View<State>> & {
+  [NotFound]?: View<State>;
 };
 
 export declare function mount<State extends object = object>(

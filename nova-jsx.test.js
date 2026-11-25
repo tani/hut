@@ -1,7 +1,17 @@
 // @vitest-environment jsdom
 
 import { afterEach, expect, test, vi } from "vite-plus/test";
-import { Fragment, jsx, jsxDEV, jsxs, morph, morphChildren, mount, reactive } from "./nova-jsx.js";
+import {
+  Fragment,
+  NotFound,
+  jsx,
+  jsxDEV,
+  jsxs,
+  morph,
+  morphChildren,
+  mount,
+  reactive,
+} from "./nova-jsx.js";
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -205,11 +215,9 @@ test("hash routing decodes segments, ignores query-only changes, and unsubscribe
   const root = document.createElement("main");
   const removeListener = vi.spyOn(window, "removeEventListener");
   const app = mount(root, {
-    routes: {
-      "/": () => "home",
-      "/items/:id": ({ path, params }) => [path, " → ", params.id],
-    },
-    notFound: ({ path, params }) => ["missing ", path, " ", Object.keys(params).length],
+    "/": () => "home",
+    "/items/:id": ({ path, params }) => [path, " → ", params.id],
+    [NotFound]: ({ path, params }) => ["missing ", path, " ", Object.keys(params).length],
   });
   /** @param {string} hash */
   function navigate(hash) {
@@ -248,8 +256,8 @@ test("hash routing captures multiple named segments and discards partial matches
   );
   const notFound = vi.fn(() => "missing");
   const app = mount(root, {
-    routes: { "/teams/:team/members/:member": member },
-    notFound,
+    "/teams/:team/members/:member": member,
+    [NotFound]: notFound,
   });
 
   try {
@@ -270,6 +278,20 @@ test("hash routing captures multiple named segments and discards partial matches
       params: {},
       state: app.state,
     });
+  } finally {
+    app.unmount();
+  }
+});
+
+test("unmatched hash routes render nothing when NotFound is omitted", async () => {
+  window.history.replaceState(null, "", "#/missing");
+  const root = document.createElement("main");
+  root.textContent = "previous";
+  const app = mount(root, { "/": () => "home" });
+
+  try {
+    await app.rendered;
+    expect(root.childNodes).toHaveLength(0);
   } finally {
     app.unmount();
   }

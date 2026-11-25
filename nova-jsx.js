@@ -23,6 +23,10 @@
 
 /** Groups children in a document fragment without adding a wrapper element. */
 export const Fragment = Symbol("Fragment");
+
+/** Optional route table key for paths that match no route. */
+export const NotFound = Symbol("nova-jsx.NotFound");
+
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
 /** @typedef {Record<string, unknown> & { children?: Child, preserve?: boolean }} Props */
 /** @typedef {{ key: unknown, events: Map<string, EventListener>, props: Props }} ElementMetadata */
@@ -327,8 +331,12 @@ export function morphChildren(parent, target) {
 
 /**
  * @template {object} State
- * @typedef {{ routes: Record<string, (props: RouteProps<State>) => Child>,
- *   notFound?: (props: RouteProps<State>) => Child }} Router
+ * @typedef {(props: RouteProps<State>) => Child} View
+ */
+
+/**
+ * @template {object} State
+ * @typedef {Record<string, View<State>> & { [NotFound]?: View<State> }} Router
  */
 
 /**
@@ -350,13 +358,13 @@ export function morphChildren(parent, target) {
  *
  * @example
  * ```tsx
+ * import { mount, NotFound } from "nova-jsx";
+ *
  * // The hash #/items/a%20b?tab=details supplies "a b" as params.id.
  * mount(root, {
- *   routes: {
- *     "/": () => "Home",
- *     "/items/:id": ({ params }) => <h1>{params.id}</h1>,
- *   },
- *   notFound: () => "Page not found",
+ *   "/": () => "Home",
+ *   "/items/:id": ({ params }) => <h1>{params.id}</h1>,
+ *   [NotFound]: () => "Page not found",
  * });
  * ```
  *
@@ -426,10 +434,11 @@ export function mount(root, app, initial = /** @type {State} */ ({})) {
 
 /**
  * @template {object} State
- * @param {Router<State>} router
+ * @param {Router<State>} routes
  * @returns {(props: Omit<RouteProps<State>, "params">) => Child}
  */
-function hashView({ routes, notFound = () => null }) {
+function hashView(routes) {
+  const notFound = routes[NotFound] ?? (() => null);
   const patterns = Object.entries(routes).map(([path, view]) => ({
     pattern: path.split("/"),
     view,

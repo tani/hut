@@ -64,19 +64,20 @@ Pass a route table to `mount` in place of the view function. Route handlers rece
 `{ path, params, state }`. Each `:name` captures one non-empty path segment.
 For example, `#/teams/blue%20sky/members/42?tab=details` matches
 `/teams/:team/members/:member` with `params.team` set to `"blue sky"` and
-`params.member` set to `"42"`. The query string is ignored when matching routes.
+`params.member` set to `"42"`. The query string is ignored when matching routes. Use the optional `[NotFound]` key to render a fallback.
+Unmatched paths render nothing by default.
 
 ```jsx
+import { mount, NotFound } from "nova-jsx";
+
 mount(root, {
-  routes: {
-    "/": () => "Home",
-    "/teams/:team/members/:member": ({ params }) => (
-      <h1>
-        {params.team} / Member {params.member}
-      </h1>
-    ),
-  },
-  notFound: () => "Page not found",
+  "/": () => "Home",
+  "/teams/:team/members/:member": ({ params }) => (
+    <h1>
+      {params.team} / Member {params.member}
+    </h1>
+  ),
+  [NotFound]: () => "Page not found",
 });
 ```
 
