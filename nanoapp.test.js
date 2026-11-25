@@ -266,3 +266,39 @@ test("hash routing decodes segments, ignores query-only changes, and unsubscribe
     app.unmount();
   }
 });
+
+test("hash routing captures multiple named segments and discards partial matches", async () => {
+  window.history.replaceState(null, "", "#/teams/blue%20sky/members/a%2Fb?tab=details");
+  const root = document.createElement("main");
+  const member = vi.fn(
+    /** @param {import("./nanoapp.js").RouteProps<object>} props */
+    ({ params }) => [params.team, " / ", params.member],
+  );
+  const notFound = vi.fn(() => "missing");
+  const app = mount(root, {
+    routes: { "/teams/:team/members/:member": member },
+    notFound,
+  });
+
+  try {
+    await app.rendered;
+    expect(root.textContent).toBe("blue sky / a/b");
+    expect(member).toHaveBeenCalledExactlyOnceWith({
+      path: "/teams/blue%20sky/members/a%2Fb",
+      params: { team: "blue sky", member: "a/b" },
+      state: app.state,
+    });
+
+    window.history.replaceState(null, "", "#/teams/blue%20sky/members/");
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    await app.rendered;
+    expect(root.textContent).toBe("missing");
+    expect(notFound).toHaveBeenCalledExactlyOnceWith({
+      path: "/teams/blue%20sky/members/",
+      params: {},
+      state: app.state,
+    });
+  } finally {
+    app.unmount();
+  }
+});

@@ -44,15 +44,20 @@ route updates.
 ## Hash routing
 
 Pass a route table to `mount` in place of the view function. Route handlers receive
-`{ path, params, state }`. For example, `#/items/a%20b?tab=details` matches
-`/items/:id` with `params.id` set to `"a b"`. The query string is ignored when
-matching routes.
+`{ path, params, state }`. Each `:name` captures one non-empty path segment.
+For example, `#/teams/blue%20sky/members/42?tab=details` matches
+`/teams/:team/members/:member` with `params.team` set to `"blue sky"` and
+`params.member` set to `"42"`. The query string is ignored when matching routes.
 
 ```jsx
 mount(root, {
   routes: {
     "/": () => "Home",
-    "/items/:id": ({ params }) => <h1>Item {params.id}</h1>,
+    "/teams/:team/members/:member": ({ params }) => (
+      <h1>
+        {params.team} / Member {params.member}
+      </h1>
+    ),
   },
   notFound: () => "Page not found",
 });
