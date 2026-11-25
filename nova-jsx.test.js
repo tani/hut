@@ -382,15 +382,22 @@ test("h and tags build nodes with positional children and preserve keys", () => 
   expect(tags["demo-panel"]?.(null).localName).toBe("demo-panel");
 });
 
-test("package entry points expose only their public API", async () => {
+test("JSX runtime subpaths resolve to the public entry point", async () => {
   const [root, runtime, development] = await Promise.all([
     import("nova-jsx"),
     import("nova-jsx/jsx-runtime"),
     import("nova-jsx/jsx-dev-runtime"),
   ]);
-  expect(Object.keys(root).sort()).toEqual(["Fragment", "NotFound", "h", "mount", "tags"]);
-  expect(Object.keys(runtime).sort()).toEqual(["Fragment", "jsx", "jsxs"]);
-  expect(Object.keys(development).sort()).toEqual(["Fragment", "jsxDEV"]);
-  expect(root.Fragment).toBe(runtime.Fragment);
-  expect(root.Fragment).toBe(development.Fragment);
+  expect(Object.keys(root).sort()).toEqual([
+    "Fragment",
+    "NotFound",
+    "h",
+    "jsx",
+    "jsxDEV",
+    "jsxs",
+    "mount",
+    "tags",
+  ]);
+  expect(runtime).toBe(root);
+  expect(development).toBe(root);
 });

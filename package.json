@@ -14,10 +14,6 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "jsx-runtime.js",
-    "jsx-runtime.d.ts",
-    "jsx-dev-runtime.js",
-    "jsx-dev-runtime.d.ts",
     "nova-jsx.js",
     "nova-jsx.d.ts"
   ],
@@ -30,12 +26,12 @@
       "default": "./index.js"
     },
     "./jsx-runtime": {
-      "types": "./jsx-runtime.d.ts",
-      "default": "./jsx-runtime.js"
+      "types": "./index.d.ts",
+      "default": "./index.js"
     },
     "./jsx-dev-runtime": {
-      "types": "./jsx-dev-runtime.d.ts",
-      "default": "./jsx-dev-runtime.js"
+      "types": "./index.d.ts",
+      "default": "./index.js"
     }
   },
   "scripts": {

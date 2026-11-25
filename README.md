@@ -114,14 +114,10 @@ mount(root, {
 
 ## Package exports
 
-| Import path                | Exports                                      |
-| -------------------------- | -------------------------------------------- |
-| `nova-jsx`                 | `mount`, `NotFound`, `h`, `tags`, `Fragment` |
-| `nova-jsx/jsx-runtime`     | `jsx`, `jsxs`, `Fragment`                    |
-| `nova-jsx/jsx-dev-runtime` | `jsxDEV`, `Fragment`                         |
-
-Import application APIs from `nova-jsx`. The automatic JSX transform imports
-the appropriate runtime for you.
+Import `mount`, `NotFound`, `h`, `tags`, and `Fragment` from `nova-jsx`.
+The package also exports `jsx`, `jsxs`, and `jsxDEV` for JSX transforms.
+The automatic transform resolves these exports through `nova-jsx/jsx-runtime`
+or `nova-jsx/jsx-dev-runtime`.
 
 ## License
 
