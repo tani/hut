@@ -1,6 +1,6 @@
 {
   "name": "nova-jsx",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Reactive DOM rendering and hash routing for the browser.",
   "homepage": "https://github.com/tani/nova-jsx#readme",
   "bugs": {
