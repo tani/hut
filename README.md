@@ -44,13 +44,14 @@ route updates.
 ## Preserving external DOM
 
 Use `preserve` on elements managed by other code, such as an xterm.js host or a
-canvas. When the tag and key still match, nova-jsx reuses the element and skips
-updates to its attributes, listeners, and children.
+canvas. When reconciliation reuses the element, `preserve` skips updates to
+its attributes, listeners, and children. A key is optional. Use a stable key
+when the element may move among siblings.
 
 ```jsx
 <section className={state.expanded ? "expanded" : "compact"}>
-  <div key="terminal" preserve />
-  <canvas key="preview" preserve />
+  <div preserve />
+  <canvas preserve />
 </section>
 ```
 

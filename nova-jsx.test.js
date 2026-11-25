@@ -275,16 +275,12 @@ test("hash routing captures multiple named segments and discards partial matches
   }
 });
 
-test("preserve keeps an external host intact until normal updates resume", () => {
+test("preserve keeps an unkeyed external host intact until normal updates resume", () => {
   const root = document.createElement("main");
   const originalClick = vi.fn();
   const skippedClick = vi.fn();
   const resumedClick = vi.fn();
-  const host = jsx(
-    "div",
-    { preserve: true, className: "initial", onClick: originalClick },
-    "terminal",
-  );
+  const host = jsx("div", { preserve: true, className: "initial", onClick: originalClick });
   morphChildren(root, fragment([host, jsx("p", { children: "before" })]));
   const terminal = document.createElement("span");
   terminal.textContent = "external terminal";
@@ -295,7 +291,7 @@ test("preserve keeps an external host intact until normal updates resume", () =>
   morphChildren(
     root,
     fragment([
-      jsx("div", { preserve: true, className: "skipped", onClick: skippedClick }, "terminal"),
+      jsx("div", { preserve: true, className: "skipped", onClick: skippedClick }),
       jsx("p", { children: "after" }),
     ]),
   );
@@ -311,11 +307,12 @@ test("preserve keeps an external host intact until normal updates resume", () =>
   morphChildren(
     root,
     fragment(
-      jsx(
-        "div",
-        { preserve: false, className: "resumed", onClick: resumedClick, children: "managed" },
-        "terminal",
-      ),
+      jsx("div", {
+        preserve: false,
+        className: "resumed",
+        onClick: resumedClick,
+        children: "managed",
+      }),
     ),
   );
   expect(root.firstChild).toBe(host);
