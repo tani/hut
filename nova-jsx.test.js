@@ -487,11 +487,11 @@ test("h and tags accept children without a leading props object", () => {
 test("h passes normalized children and optional props to components", () => {
   /** @param {{ children?: import("./nova-jsx.js").Child, title?: string }} props */
   const component = ({ children, title }) => h("div", { title }, children);
-  expect(h(component, "text").outerHTML).toBe("<div>text</div>");
-  expect(h(component, { title: "label" }, ["a", "b"]).outerHTML).toBe(
+  expect(fragment(h(component, "text")).firstElementChild?.outerHTML).toBe("<div>text</div>");
+  expect(fragment(h(component, { title: "label" }, ["a", "b"])).firstElementChild?.outerHTML).toBe(
     '<div title="label">ab</div>',
   );
-  expect(h(component).outerHTML).toBe("<div></div>");
+  expect(fragment(h(component)).firstElementChild?.outerHTML).toBe("<div></div>");
 });
 
 test("JSX runtime subpaths resolve to the public entry point", async () => {
