@@ -1,7 +1,7 @@
 {
   "name": "nanoapp",
   "version": "1.0.0",
-  "private": true,
+  "description": "Reactive DOM rendering and hash routing for the browser.",
   "homepage": "https://github.com/tani/nanoapp#readme",
   "bugs": {
     "url": "https://github.com/tani/nanoapp/issues"
@@ -10,8 +10,27 @@
     "type": "git",
     "url": "git+https://github.com/tani/nanoapp.git"
   },
+  "files": [
+    "nanoapp.js",
+    "nanoapp.d.ts"
+  ],
   "type": "module",
   "main": "nanoapp.js",
+  "types": "./nanoapp.d.ts",
+  "exports": {
+    ".": {
+      "types": "./nanoapp.d.ts",
+      "default": "./nanoapp.js"
+    },
+    "./jsx-runtime": {
+      "types": "./nanoapp.d.ts",
+      "default": "./nanoapp.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./nanoapp.d.ts",
+      "default": "./nanoapp.js"
+    }
+  },
   "scripts": {
     "check": "vp check --deny-warnings",
     "test": "vp test"
