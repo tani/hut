@@ -77,11 +77,7 @@ export declare function h<Tag extends keyof HTMLElementTagNameMap>(
   props?: Props | Child,
   ...children: Child[]
 ): HTMLElementTagNameMap[Tag];
-export declare function h(
-  type: string,
-  props?: Props | Child,
-  ...children: Child[]
-): HTMLElement;
+export declare function h(type: string, props?: Props | Child, ...children: Child[]): HTMLElement;
 export declare function h<P extends Props>(
   type: string | typeof Fragment | ((props: P) => Child),
   props?: P | Child,

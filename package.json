@@ -1,21 +1,21 @@
 {
-  "name": "nova-jsx",
+  "name": "drey",
   "version": "4.1.0",
-  "description": "Reactive DOM rendering and hash routing for the browser.",
-  "homepage": "https://github.com/tani/nova-jsx#readme",
+  "description": "DREY (Declarative Reactive Element Yielding) renders JSX to DOM and routes by URL hash.",
+  "homepage": "https://github.com/tani/drey#readme",
   "bugs": {
-    "url": "https://github.com/tani/nova-jsx/issues"
+    "url": "https://github.com/tani/drey/issues"
   },
   "license": "0BSD",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tani/nova-jsx.git"
+    "url": "git+https://github.com/tani/drey.git"
   },
   "files": [
     "index.js",
     "index.d.ts",
-    "nova-jsx.js",
-    "nova-jsx.d.ts"
+    "drey.js",
+    "drey.d.ts"
   ],
   "type": "module",
   "main": "index.js",

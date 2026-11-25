@@ -13,7 +13,7 @@ import {
   mount,
   reactive,
   tags,
-} from "./nova-jsx.js";
+} from "./drey.js";
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -21,7 +21,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** @param {import("./nova-jsx.js").Child} children */
+/** @param {import("./drey.js").Child} children */
 function fragment(children) {
   const result = jsx(Fragment, { children });
   if (!(result instanceof DocumentFragment)) throw new TypeError("Expected a fragment");
@@ -304,7 +304,7 @@ test("hash routing captures multiple named segments and discards partial matches
   window.history.replaceState(null, "", "#/teams/blue%20sky/members/a%2Fb?tab=details");
   const root = document.createElement("main");
   const member = vi.fn(
-    /** @param {import("./nova-jsx.js").RouteProps<object>} props */
+    /** @param {import("./drey.js").RouteProps<object>} props */
     ({ params }) => [params.team, " / ", params.member],
   );
   const notFound = vi.fn(() => "missing");
@@ -485,7 +485,7 @@ test("h and tags accept children without a leading props object", () => {
 });
 
 test("h passes normalized children and optional props to components", () => {
-  /** @param {{ children?: import("./nova-jsx.js").Child, title?: string }} props */
+  /** @param {{ children?: import("./drey.js").Child, title?: string }} props */
   const component = ({ children, title }) => h("div", { title }, children);
   expect(fragment(h(component, "text")).firstElementChild?.outerHTML).toBe("<div>text</div>");
   expect(fragment(h(component, { title: "label" }, ["a", "b"])).firstElementChild?.outerHTML).toBe(
@@ -496,9 +496,9 @@ test("h passes normalized children and optional props to components", () => {
 
 test("JSX runtime subpaths resolve to the public entry point", async () => {
   const [root, runtime, development] = await Promise.all([
-    import("nova-jsx"),
-    import("nova-jsx/jsx-runtime"),
-    import("nova-jsx/jsx-dev-runtime"),
+    import("drey"),
+    import("drey/jsx-runtime"),
+    import("drey/jsx-dev-runtime"),
   ]);
   expect(Object.keys(root).sort()).toEqual([
     "Fragment",

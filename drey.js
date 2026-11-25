@@ -3,12 +3,12 @@
 
 /**
  * @file Render JSX to DOM with synchronous components and reactive state.
- * Configure the automatic JSX transform with `jsxImportSource: "nova-jsx"`.
+ * Configure the automatic JSX transform with `jsxImportSource: "drey"`.
  * In TypeScript, set `jsx: "react-jsx"` for this transform.
  *
  * @example
  * ```tsx
- * import { mount } from "nova-jsx";
+ * import { mount } from "drey";
  *
  * const root = document.querySelector("main");
  * if (!root) throw new Error("Missing mount point");
@@ -25,7 +25,7 @@
 export const Fragment = Symbol("Fragment");
 
 /** Optional route table key for paths that match no route. */
-export const NotFound = Symbol("nova-jsx.NotFound");
+export const NotFound = Symbol("drey.NotFound");
 
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
 /** @typedef {Record<string, unknown> & { children?: Child, key?: unknown, preserve?: boolean }} Props */
@@ -152,7 +152,10 @@ export const jsxDEV = jsx;
  * @param {...Child} children
  */
 export function h(type, props, ...children) {
-  if (props != null && (typeof props !== "object" || Array.isArray(props) || props instanceof Node)) {
+  if (
+    props != null &&
+    (typeof props !== "object" || Array.isArray(props) || props instanceof Node)
+  ) {
     children.unshift(/** @type {Child} */ (props));
     props = undefined;
   }
@@ -394,7 +397,7 @@ export function morphChildren(parent, target) {
  *
  * @example
  * ```tsx
- * import { mount, NotFound } from "nova-jsx";
+ * import { mount, NotFound } from "drey";
  *
  * // The hash #/items/a%20b?tab=details supplies "a b" as params.id.
  * mount(root, {

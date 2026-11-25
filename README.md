@@ -1,23 +1,25 @@
-# nova-jsx
+# DREY
 
-nova-jsx renders JSX to DOM, updates it from reactive state, and routes by URL hash.
+**DREY** stands for **Declarative Reactive Element Yielding**.
+
+It renders JSX to DOM, updates it from reactive state, and routes by URL hash.
 It targets modern browsers with native `URLPattern` and `WeakMap.getOrInsertComputed()`;
 no polyfills are bundled.
 
 ## Quick start
 
 ```sh
-npm install nova-jsx
+npm install drey
 ```
 
 Set the import source for your toolchain's automatic JSX transform to
-`nova-jsx`. For TypeScript, add these options to `tsconfig.json`.
+`drey`. For TypeScript, add these options to `tsconfig.json`.
 
 ```json
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "nova-jsx"
+    "jsxImportSource": "drey"
   }
 }
 ```
@@ -26,7 +28,7 @@ With a `<main id="app"></main>` in your HTML, use this JSX module as the entry
 point.
 
 ```jsx
-import { mount } from "nova-jsx";
+import { mount } from "drey";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing mount point");
@@ -64,7 +66,7 @@ of children and the same props as JSX, including `key`.
 Use `h(Fragment, ...children)` to group siblings without a wrapper.
 
 ```js
-import { h, tags } from "nova-jsx";
+import { h, tags } from "drey";
 
 const list = tags.ul(
   { className: "items" },
@@ -108,7 +110,7 @@ Use the optional `[NotFound]` key to render a fallback. Unmatched paths render
 nothing by default.
 
 ```jsx
-import { mount, NotFound } from "nova-jsx";
+import { mount, NotFound } from "drey";
 
 mount(root, {
   "/": () => "Home",
@@ -123,10 +125,10 @@ mount(root, {
 
 ## Package exports
 
-Import `mount`, `NotFound`, `h`, `tags`, and `Fragment` from `nova-jsx`.
+Import `mount`, `NotFound`, `h`, `tags`, and `Fragment` from `drey`.
 The package also exports `jsx`, `jsxs`, and `jsxDEV` for JSX transforms.
-The automatic transform resolves these exports through `nova-jsx/jsx-runtime`
-or `nova-jsx/jsx-dev-runtime`.
+The automatic transform resolves these exports through `drey/jsx-runtime`
+or `drey/jsx-dev-runtime`.
 
 ## License
 
