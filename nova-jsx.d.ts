@@ -15,7 +15,11 @@ export type Child =
   | undefined
   | readonly Child[];
 
-export type Props = Record<string, unknown> & { children?: Child; preserve?: boolean };
+export type Props = Record<string, unknown> & {
+  children?: Child;
+  key?: unknown;
+  preserve?: boolean;
+};
 
 export declare namespace JSX {
   type Element = Child;
@@ -62,6 +66,34 @@ export declare function jsx<P extends Props>(
 
 export declare const jsxs: typeof jsx;
 export declare const jsxDEV: typeof jsx;
+
+export declare function h(
+  type: typeof Fragment,
+  props: Props | null | undefined,
+  ...children: Child[]
+): DocumentFragment;
+export declare function h<Tag extends keyof HTMLElementTagNameMap>(
+  type: Tag,
+  props: Props | null | undefined,
+  ...children: Child[]
+): HTMLElementTagNameMap[Tag];
+export declare function h(
+  type: string,
+  props: Props | null | undefined,
+  ...children: Child[]
+): HTMLElement;
+export declare function h<P extends Props>(
+  type: string | typeof Fragment | ((props: P) => Child),
+  props: P | null | undefined,
+  ...children: Child[]
+): Child;
+
+export declare const tags: {
+  [Tag in keyof HTMLElementTagNameMap]: (
+    props?: Props | null,
+    ...children: Child[]
+  ) => HTMLElementTagNameMap[Tag];
+} & Record<string, (props?: Props | null, ...children: Child[]) => HTMLElement>;
 
 export declare function reactive<State extends object>(initial: State, notify: () => void): State;
 export declare function morph(oldNode: Node, nextNode: Node): Node;

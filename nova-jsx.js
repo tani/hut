@@ -28,7 +28,7 @@ export const Fragment = Symbol("Fragment");
 export const NotFound = Symbol("nova-jsx.NotFound");
 
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
-/** @typedef {Record<string, unknown> & { children?: Child, preserve?: boolean }} Props */
+/** @typedef {Record<string, unknown> & { children?: Child, key?: unknown, preserve?: boolean }} Props */
 /** @typedef {{ key: unknown, events: Map<string, EventListener>, props: Props }} ElementMetadata */
 
 /**
@@ -136,6 +136,38 @@ function appendChildren(parent, children) {
 export const jsxs = jsx;
 /** JSX development runtime alias. */
 export const jsxDEV = jsx;
+
+/**
+ * Creates JSX output with positional children.
+ *
+ * @example
+ * ```js
+ * const button = h("button", { onClick: save }, "Save");
+ * ```
+ *
+ * @template {Props} P
+ * @param {string | typeof Fragment | ((props: P) => Child)} type
+ * @param {P | null | undefined} props
+ * @param {...Child} children
+ */
+export function h(type, props, ...children) {
+  const { key, ...rest } = props ?? {};
+  /** @type {unknown[]} */
+  const nested = children;
+  const flat = /** @type {Child[]} */ (nested.flat(Infinity));
+  return jsx(type, /** @type {P} */ ({ ...rest, children: flat.length > 1 ? flat : flat[0] }), key);
+}
+
+/** Element factories such as `tags.div(null, "Hello")`. */
+export const tags =
+  /** @type {Record<string, (props?: Props | null, ...children: Child[]) => HTMLElement>} */ (
+    new Proxy(Object.create(null), {
+      get:
+        (_, tag) =>
+        (/** @type {Props | null | undefined} */ props, /** @type {Child[]} */ ...children) =>
+          h(String(tag), props, ...children),
+    })
+  );
 
 /** @param {unknown} value @returns {value is object} */
 function observable(value) {

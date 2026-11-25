@@ -4,6 +4,7 @@ import { afterEach, expect, test, vi } from "vite-plus/test";
 import {
   Fragment,
   NotFound,
+  h,
   jsx,
   jsxDEV,
   jsxs,
@@ -11,6 +12,7 @@ import {
   morphChildren,
   mount,
   reactive,
+  tags,
 } from "./nova-jsx.js";
 
 afterEach(() => {
@@ -365,4 +367,17 @@ test("preserve keeps canvas dimensions but allows replacement and removal", () =
   expect(replacement.width).toBe(320);
   morphChildren(root, fragment(null));
   expect(root.childNodes).toHaveLength(0);
+});
+
+test("h and tags build nodes with positional children and preserve keys", () => {
+  const click = vi.fn();
+  const button = tags.button({ key: "save", onClick: click }, ["S", ["ave"]]);
+  const root = tags.div(null);
+  morphChildren(root, h(Fragment, null, button));
+  morphChildren(root, h(Fragment, null, h("button", { key: "save", onClick: click }, "Saved")));
+  expect(root.firstChild).toBe(button);
+  expect(button.textContent).toBe("Saved");
+  button.click();
+  expect(click).toHaveBeenCalledTimes(1);
+  expect(tags["demo-panel"](null).localName).toBe("demo-panel");
 });
