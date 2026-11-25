@@ -30,7 +30,8 @@ and views derive the DOM from those inputs. Event handlers update the store.
   receive `{ path, params, state }` and can pass the state their children need.
   The same store remains available across navigation.
 - Let the hash be the source of truth for the current page. A named parameter
-  such as `:id` captures one non-empty path segment.
+  such as `:id` captures one non-empty path segment. Route keys use native
+  `URLPattern` pathname syntax, including optional segments and wildcards.
 
 ```tsx
 import { mount, NotFound } from "nova-jsx";

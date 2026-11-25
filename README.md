@@ -1,6 +1,8 @@
 # nova-jsx
 
 nova-jsx renders JSX to DOM, updates it from reactive state, and routes by URL hash.
+It targets modern browsers with native `URLPattern` and `WeakMap.getOrInsertComputed()`;
+no polyfills are bundled.
 
 ## Quick start
 
@@ -94,6 +96,9 @@ Pass a route table to `mount` in place of the view function. Route handlers rece
 For example, `#/teams/blue%20sky/members/42?tab=details` matches
 `/teams/:team/members/:member` with `params.team` set to `"blue sky"` and
 `params.member` set to `"42"`. The query string is ignored when matching routes.
+Route keys use the native `URLPattern` pathname syntax, including named groups,
+optional segments, regular expressions, and wildcards. Matched parameters are
+percent-decoded; unmatched optional parameters are `undefined`.
 
 Use the optional `[NotFound]` key to render a fallback. Unmatched paths render
 nothing by default.

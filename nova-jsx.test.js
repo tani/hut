@@ -160,6 +160,38 @@ test("morph replaces stale listeners and removes attributes and JSX metadata beh
   expect(newClick).toHaveBeenCalledTimes(1);
 });
 
+test("morph aborts only the previous JSX listeners, not external or target listeners", () => {
+  const external = vi.fn();
+  const before = vi.fn();
+  const after = vi.fn();
+  const old = jsx("button", { onClick: before });
+  const target = jsx("button", { onClick: after });
+  old.addEventListener("click", external);
+  morph(old, target);
+  old.click();
+  target.click();
+  expect(before).not.toHaveBeenCalled();
+  expect(after).toHaveBeenCalledTimes(2);
+  expect(external).toHaveBeenCalledTimes(1);
+
+  morph(old, document.createElement("button"));
+  old.click();
+  target.click();
+  expect(after).toHaveBeenCalledTimes(3);
+  expect(external).toHaveBeenCalledTimes(2);
+});
+
+test("range deletion removes only stale siblings, including text nodes", () => {
+  const root = document.createElement("main");
+  const retained = jsx("p", { children: "before" });
+  root.append(retained, "stale", document.createComment("stale"), jsx("span", {}));
+  morphChildren(root, fragment(jsx("p", { children: "after" })));
+  expect([...root.childNodes]).toEqual([retained]);
+  expect(root.textContent).toBe("after");
+  morphChildren(root, fragment(null));
+  expect(root.childNodes).toHaveLength(0);
+});
+
 test("mount batches updates and restores controlled form values while retaining input identity", async () => {
   const root = document.createElement("main");
   const render = vi.fn(
@@ -280,6 +312,36 @@ test("hash routing captures multiple named segments and discards partial matches
       params: {},
       state: app.state,
     });
+  } finally {
+    app.unmount();
+  }
+});
+
+test("hash routing supports native URLPattern optional groups, regexes and wildcards", async () => {
+  window.history.replaceState(null, "", "#/items/42");
+  const root = document.createElement("main");
+  const app = mount(root, {
+    "/items/:id(\\d+)": ({ params }) => params.id,
+    "/docs/:page?": ({ params }) => params.page ?? "index",
+    "/files/*": ({ params }) => params["0"],
+    [NotFound]: () => "missing",
+  });
+  async function navigate(/** @type {string} */ hash) {
+    window.history.replaceState(null, "", hash);
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    await app.rendered;
+  }
+  try {
+    await app.rendered;
+    expect(root.textContent).toBe("42");
+    await navigate("#/items/no");
+    expect(root.textContent).toBe("missing");
+    await navigate("#/docs");
+    expect(root.textContent).toBe("index");
+    await navigate("#/docs/intro");
+    expect(root.textContent).toBe("intro");
+    await navigate("#/files/a/b");
+    expect(root.textContent).toBe("a/b");
   } finally {
     app.unmount();
   }

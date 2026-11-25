@@ -29,7 +29,7 @@ export const NotFound = Symbol("nova-jsx.NotFound");
 
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
 /** @typedef {Record<string, unknown> & { children?: Child, key?: unknown, preserve?: boolean }} Props */
-/** @typedef {{ key: unknown, events: Map<string, EventListener>, props: Props }} ElementMetadata */
+/** @typedef {{ key: unknown, events: Map<string, EventListener>, controller: AbortController | undefined, props: Props }} ElementMetadata */
 
 /**
  * Stores keys, listeners, and props for nodes created by JSX. The reconciler
@@ -78,7 +78,7 @@ export function jsx(type, props, key) {
     if (!(result instanceof Element)) {
       throw new TypeError("Keyed components must return one element");
     }
-    metadata.set(result, { events: new Map(), props: {}, ...metadata.get(result), key });
+    metadata.set(result, { events: new Map(), controller: undefined, props: {}, ...metadata.get(result), key });
     return result;
   }
 
@@ -96,7 +96,6 @@ export function jsx(type, props, key) {
       const event = name.slice(2).toLowerCase();
       const listener = /** @type {EventListener} */ (value);
       events.set(event, listener);
-      element.addEventListener(event, listener);
     } else if (name === "style" && value && typeof value === "object") {
       for (const [property, entry] of Object.entries(value)) {
         if (property.includes("-")) element.style.setProperty(property, String(entry));
@@ -112,7 +111,7 @@ export function jsx(type, props, key) {
   for (const name of formProps) {
     if (name in props && name in element) Reflect.set(element, name, props[name]);
   }
-  metadata.set(element, { key: key ?? props.key, events, props });
+  metadata.set(element, { key: key ?? props.key, events, controller: bindEvents(element, events), props });
   return element;
 }
 
@@ -130,6 +129,19 @@ function appendChildren(parent, children) {
     }
   }
   return parent;
+}
+
+/**
+ * @param {Element} element
+ * @param {Map<string, EventListener>} events
+ */
+function bindEvents(element, events) {
+  if (!events.size) return undefined;
+  const controller = new AbortController();
+  for (const [name, listener] of events) {
+    element.addEventListener(name, listener, { signal: controller.signal });
+  }
+  return controller;
 }
 
 /** JSX runtime alias for elements with multiple children. */
@@ -204,32 +216,30 @@ export function reactive(initial, notify) {
   /** @param {unknown} value @returns {unknown} */
   function wrap(value) {
     if (!observable(value) || originals.has(value)) return value;
-    const existing = proxies.get(value);
-    if (existing) return existing;
+    return proxies.getOrInsertComputed(value, (target) => {
+      const proxy = new Proxy(target, {
+        get: (target, key, receiver) => wrap(Reflect.get(target, key, receiver)),
+        set(target, key, value, receiver) {
+          const had = Object.hasOwn(target, key);
+          const before = Reflect.get(target, key, receiver);
+          const raw = originals.get(value) ?? value;
+          const ok = Reflect.set(target, key, raw, receiver);
+          if (ok && (!had || !Object.is(before, Reflect.get(target, key, receiver)))) {
+            notify();
+          }
+          return ok;
+        },
+        deleteProperty(target, key) {
+          const had = Object.hasOwn(target, key);
+          const ok = Reflect.deleteProperty(target, key);
+          if (ok && had) notify();
+          return ok;
+        },
+      });
 
-    const proxy = new Proxy(value, {
-      get: (target, key, receiver) => wrap(Reflect.get(target, key, receiver)),
-      set(target, key, value, receiver) {
-        const had = Object.hasOwn(target, key);
-        const before = Reflect.get(target, key, receiver);
-        const raw = originals.get(value) ?? value;
-        const ok = Reflect.set(target, key, raw, receiver);
-        if (ok && (!had || !Object.is(before, Reflect.get(target, key, receiver)))) {
-          notify();
-        }
-        return ok;
-      },
-      deleteProperty(target, key) {
-        const had = Object.hasOwn(target, key);
-        const ok = Reflect.deleteProperty(target, key);
-        if (ok && had) notify();
-        return ok;
-      },
+      originals.set(proxy, target);
+      return proxy;
     });
-
-    proxies.set(value, proxy);
-    originals.set(proxy, value);
-    return proxy;
   }
 
   return /** @type {State} */ (wrap(initial));
@@ -287,15 +297,12 @@ export function morph(oldNode, nextNode) {
     if (oldNode.getAttribute(name) !== value) oldNode.setAttribute(name, value);
   }
 
-  const before = metadata.get(oldNode);
-  for (const [name, listener] of before?.events ?? []) {
-    if (after?.events.get(name) !== listener) oldNode.removeEventListener(name, listener);
+  metadata.get(oldNode)?.controller?.abort();
+  if (after) {
+    metadata.set(oldNode, { ...after, controller: bindEvents(oldNode, after.events) });
+  } else {
+    metadata.delete(oldNode);
   }
-  for (const [name, listener] of after?.events ?? []) {
-    if (before?.events.get(name) !== listener) oldNode.addEventListener(name, listener);
-  }
-  if (after) metadata.set(oldNode, after);
-  else metadata.delete(oldNode);
 
   morphChildren(oldNode, nextNode);
   for (const name of formProps) {
@@ -349,10 +356,11 @@ export function morphChildren(parent, target) {
   }
 
   // Everything before the cursor is already in the desired order.
-  while (cursor) {
-    const next = cursor.nextSibling;
-    cursor.remove();
-    cursor = next;
+  if (cursor) {
+    const range = parent.ownerDocument.createRange();
+    range.setStartBefore(cursor);
+    range.setEnd(parent, parent.childNodes.length);
+    range.deleteContents();
   }
 }
 
@@ -471,34 +479,28 @@ export function mount(root, app, initial = /** @type {State} */ ({})) {
  */
 function hashView(routes) {
   const notFound = routes[NotFound] ?? (() => null);
-  const patterns = Object.entries(routes).map(([path, view]) => ({
-    pattern: path.split("/"),
+  const patterns = Object.entries(routes).map(([pathname, view]) => ({
+    pattern: new URLPattern({ pathname }),
     view,
   }));
 
   return ({ path, state }) => {
-    let segments;
-    try {
-      segments = path.split("/").map(decodeURIComponent);
-    } catch {
-      return notFound({ path, params: {}, state });
-    }
-
     for (const { pattern, view } of patterns) {
-      if (pattern.length !== segments.length) continue;
-
-      /** @type {[string, string][]} */
-      const entries = [];
-      const matches = pattern.every((part, index) => {
-        const segment = segments[index];
-        if (!part.startsWith(":")) return part === segment;
-        if (!segment) return false;
-        entries.push([part.slice(1), segment]);
-        return true;
-      });
-      if (matches) return view({ path, params: Object.fromEntries(entries), state });
+      const match = pattern.exec({ pathname: path });
+      if (!match) continue;
+      let params;
+      try {
+        params = Object.fromEntries(
+          Object.entries(match.pathname.groups).map(([name, value]) => [
+            name,
+            value === undefined ? undefined : decodeURIComponent(value),
+          ]),
+        );
+      } catch {
+        break;
+      }
+      return view({ path, params, state });
     }
-
     return notFound({ path, params: {}, state });
   };
 }
