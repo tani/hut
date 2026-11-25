@@ -79,12 +79,10 @@ function rejectAsyncChild(value) {
 /**
  * @template {HTMLElement | DocumentFragment} Parent
  * @param {Parent} parent
- * @param {Child} children
+ * @param {unknown} children
  */
 function appendChildren(parent, children) {
-  /** @type {unknown[]} */
-  const nested = [children];
-  for (const child of nested.flat(Infinity)) {
+  for (const child of [children].flat(Infinity)) {
     rejectAsyncChild(child);
     if (child instanceof Node) parent.append(child);
     else if (child != null && typeof child !== "boolean") {
@@ -126,9 +124,7 @@ export function reactive(initial, notify) {
     if (existing) return existing;
 
     const proxy = new Proxy(value, {
-      get(target, key, receiver) {
-        return wrap(Reflect.get(target, key, receiver));
-      },
+      get: (target, key, receiver) => wrap(Reflect.get(target, key, receiver)),
       set(target, key, value, receiver) {
         const had = Object.hasOwn(target, key);
         const before = Reflect.get(target, key, receiver);
@@ -232,11 +228,8 @@ export function morphChildren(parent, target) {
     const chosen = candidate && compatible(candidate, node) ? morph(candidate, node) : node;
 
     if (chosen !== cursor) {
-      if (chosen.parentNode === parent && parent.moveBefore) {
-        parent.moveBefore(chosen, cursor);
-      } else {
-        parent.insertBefore(chosen, cursor);
-      }
+      if (chosen.parentNode === parent && parent.moveBefore) parent.moveBefore(chosen, cursor);
+      else parent.insertBefore(chosen, cursor);
     }
     cursor = chosen.nextSibling;
   }
@@ -285,7 +278,7 @@ export function mount(root, app, initial = /** @type {State} */ ({})) {
     const readPath = () => window.location.hash.slice(1).split("?", 1)[0] || "/";
     let path = readPath();
     const view = hashView(app);
-    render = (props) => view({ ...props, path });
+    render = ({ state }) => view({ path, state });
 
     const sync = () => {
       const next = readPath();
@@ -306,8 +299,7 @@ export function mount(root, app, initial = /** @type {State} */ ({})) {
       pending = false;
       if (!active) return;
 
-      const next = appendChildren(document.createDocumentFragment(), render({ state }));
-      morphChildren(root, next);
+      morphChildren(root, appendChildren(document.createDocumentFragment(), render({ state })));
     });
   }
 
@@ -349,15 +341,15 @@ function hashView({ routes, notFound = () => null }) {
       if (pattern.length !== segments.length) continue;
 
       /** @type {[string, string][]} */
-      const params = [];
+      const entries = [];
       const matches = pattern.every((part, index) => {
-        if (!part.startsWith(":")) return part === segments[index];
-        if (!segments[index]) return false;
-        params.push([part.slice(1), segments[index]]);
+        const segment = segments[index];
+        if (!part.startsWith(":")) return part === segment;
+        if (!segment) return false;
+        entries.push([part.slice(1), segment]);
         return true;
       });
-
-      if (matches) return view({ path, params: Object.fromEntries(params), state });
+      if (matches) return view({ path, params: Object.fromEntries(entries), state });
     }
 
     return notFound({ path, params: {}, state });
