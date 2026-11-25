@@ -1,21 +1,21 @@
 {
-  "name": "drey",
+  "name": "hut",
   "version": "4.1.0",
-  "description": "DREY (Declarative Reactive Element Yielding) renders JSX to DOM and routes by URL hash.",
-  "homepage": "https://github.com/tani/drey#readme",
+  "description": "Hut renders JSX to DOM and routes by URL hash.",
+  "homepage": "https://github.com/tani/hut#readme",
   "bugs": {
-    "url": "https://github.com/tani/drey/issues"
+    "url": "https://github.com/tani/hut/issues"
   },
   "license": "0BSD",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tani/drey.git"
+    "url": "git+https://github.com/tani/hut.git"
   },
   "files": [
     "index.js",
     "index.d.ts",
-    "drey.js",
-    "drey.d.ts"
+    "hut.js",
+    "hut.d.ts"
   ],
   "type": "module",
   "main": "index.js",

@@ -1,25 +1,23 @@
-# DREY
+# Hut
 
-**DREY** stands for **Declarative Reactive Element Yielding**.
-
-It renders JSX to DOM, updates it from reactive state, and routes by URL hash.
+Hut renders JSX to DOM, updates it from reactive state, and routes by URL hash.
 It targets modern browsers with native `URLPattern` and `WeakMap.getOrInsertComputed()`;
 no polyfills are bundled.
 
 ## Quick start
 
 ```sh
-npm install drey
+npm install hut
 ```
 
 Set the import source for your toolchain's automatic JSX transform to
-`drey`. For TypeScript, add these options to `tsconfig.json`.
+`hut`. For TypeScript, add these options to `tsconfig.json`.
 
 ```json
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "drey"
+    "jsxImportSource": "hut"
   }
 }
 ```
@@ -28,7 +26,7 @@ With a `<main id="app"></main>` in your HTML, use this JSX module as the entry
 point.
 
 ```jsx
-import { mount } from "drey";
+import { mount } from "hut";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing mount point");
@@ -66,7 +64,7 @@ of children and the same props as JSX, including `key`.
 Use `h(Fragment, ...children)` to group siblings without a wrapper.
 
 ```js
-import { h, tags } from "drey";
+import { h, tags } from "hut";
 
 const list = tags.ul(
   { className: "items" },
@@ -110,7 +108,7 @@ Use the optional `[NotFound]` key to render a fallback. Unmatched paths render
 nothing by default.
 
 ```jsx
-import { mount, NotFound } from "drey";
+import { mount, NotFound } from "hut";
 
 mount(root, {
   "/": () => "Home",
@@ -125,10 +123,10 @@ mount(root, {
 
 ## Package exports
 
-Import `mount`, `NotFound`, `h`, `tags`, and `Fragment` from `drey`.
+Import `mount`, `NotFound`, `h`, `tags`, and `Fragment` from `hut`.
 The package also exports `jsx`, `jsxs`, and `jsxDEV` for JSX transforms.
-The automatic transform resolves these exports through `drey/jsx-runtime`
-or `drey/jsx-dev-runtime`.
+The automatic transform resolves these exports through `hut/jsx-runtime`
+or `hut/jsx-dev-runtime`.
 
 ## License
 

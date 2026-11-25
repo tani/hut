@@ -3,12 +3,12 @@
 
 /**
  * @file Render JSX to DOM with synchronous components and reactive state.
- * Configure the automatic JSX transform with `jsxImportSource: "drey"`.
+ * Configure the automatic JSX transform with `jsxImportSource: "hut"`.
  * In TypeScript, set `jsx: "react-jsx"` for this transform.
  *
  * @example
  * ```tsx
- * import { mount } from "drey";
+ * import { mount } from "hut";
  *
  * const root = document.querySelector("main");
  * if (!root) throw new Error("Missing mount point");
@@ -25,7 +25,7 @@
 export const Fragment = Symbol("Fragment");
 
 /** Optional route table key for paths that match no route. */
-export const NotFound = Symbol("drey.NotFound");
+export const NotFound = Symbol("hut.NotFound");
 
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
 /** @typedef {Record<string, unknown> & { children?: Child, key?: unknown, preserve?: boolean }} Props */
@@ -397,7 +397,7 @@ export function morphChildren(parent, target) {
  *
  * @example
  * ```tsx
- * import { mount, NotFound } from "drey";
+ * import { mount, NotFound } from "hut";
  *
  * // The hash #/items/a%20b?tab=details supplies "a b" as params.id.
  * mount(root, {

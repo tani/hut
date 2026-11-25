@@ -1,22 +1,20 @@
 ---
-name: drey
+name: hut
 description: >-
   Use when building, editing, or reviewing browser applications that use
-  drey. Covers JSX configuration, app-wide hash routing, a shared reactive
+  hut. Covers JSX configuration, app-wide hash routing, a shared reactive
   store, and DOM reconciliation.
 license: 0BSD
 metadata:
-  short-description: Build drey apps with one router and one store
+  short-description: Build hut apps with one router and one store
 ---
 
-# DREY
+# Hut
 
-**DREY** stands for **Declarative Reactive Element Yielding**.
-
-DREY creates browser DOM nodes from JSX and updates them from reactive
-state. Configure your automatic JSX transform with `drey` as its import
+Hut creates browser DOM nodes from JSX and updates them from reactive
+state. Configure your automatic JSX transform with `hut` as its import
 source. In TypeScript, set `jsx` to `"react-jsx"` and `jsxImportSource` to
-`"drey"`. In plain JavaScript, use `h` and `tags` to create elements directly.
+`"hut"`. In plain JavaScript, use `h` and `tags` to create elements directly.
 The leading props object is optional: `h("p", "Hello")`, `tags.p("Hello")`,
 and `h(Fragment, tags.p("First"), tags.p("Second"))` need no placeholder.
 
@@ -38,12 +36,12 @@ and views derive the DOM from those inputs. Event handlers update the store.
   `URLPattern` pathname syntax, including optional segments and wildcards.
 
 ```tsx
-import { mount, NotFound } from "drey";
+import { mount, NotFound } from "hut";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing app root");
 
-function Layout({ children }: { children: import("drey").Child }) {
+function Layout({ children }: { children: import("hut").Child }) {
   return (
     <>
       <nav>
@@ -89,7 +87,7 @@ mount(
 ## Rendering and performance
 
 A state or route change reruns the active view to produce a new DOM tree.
-drey compares it with the mounted DOM, reuses compatible nodes, and applies
+hut compares it with the mounted DOM, reuses compatible nodes, and applies
 the necessary updates. State writes before the next render are batched in a
 microtask. Use `await app.rendered` after scheduling an update when code needs
 to observe the updated DOM.
