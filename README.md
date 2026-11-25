@@ -41,6 +41,24 @@ when you need to wait for the DOM, such as in a test. The promise rejects if
 rendering fails. `app.unmount()` clears the root and stops future renders and
 route updates.
 
+## Creating elements in JavaScript
+
+Use `h(type, props, ...children)` or `tags.tagName(props, ...children)` to create
+elements in JavaScript files. Pass `null` when the element has no props. Both
+accept nested arrays of children and the same props as JSX, including `key`.
+
+```js
+import { h, tags } from "nova-jsx";
+
+const list = tags.ul(
+  { className: "items" },
+  h("li", { key: "first" }, "First item"),
+  tags.li({ key: "second" }, "Second item"),
+);
+
+document.body.append(list);
+```
+
 ## Preserving external DOM
 
 Use `preserve` on elements managed by other code, such as an xterm.js host or a
