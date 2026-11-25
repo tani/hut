@@ -2,13 +2,13 @@
   "name": "nova-jsx",
   "version": "1.1.0",
   "description": "Reactive DOM rendering and hash routing for the browser.",
-  "homepage": "https://github.com/tani/nanoapp#readme",
+  "homepage": "https://github.com/tani/nova-jsx#readme",
   "bugs": {
-    "url": "https://github.com/tani/nanoapp/issues"
+    "url": "https://github.com/tani/nova-jsx/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tani/nanoapp.git"
+    "url": "git+https://github.com/tani/nova-jsx.git"
   },
   "files": [
     "nova-jsx.js",
