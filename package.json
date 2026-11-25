@@ -1,0 +1,23 @@
+{
+  "name": "nanoapp",
+  "version": "1.0.0",
+  "private": true,
+  "homepage": "https://github.com/tani/nanoapp#readme",
+  "bugs": {
+    "url": "https://github.com/tani/nanoapp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tani/nanoapp.git"
+  },
+  "type": "module",
+  "main": "nanoapp.js",
+  "scripts": {
+    "check": "vp check --deny-warnings",
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "jsdom": "31.0.1",
+    "vite-plus": "1.8.0"
+  }
+}

@@ -1,0 +1,268 @@
+// @vitest-environment jsdom
+
+import { afterEach, expect, test, vi } from "vite-plus/test";
+import { Fragment, jsx, jsxDEV, jsxs, morph, morphChildren, mount, reactive } from "./nanoapp.js";
+
+afterEach(() => {
+  document.body.replaceChildren();
+  window.history.replaceState(null, "", "/");
+  vi.restoreAllMocks();
+});
+
+/** @param {import("./nanoapp.js").Child} children */
+function fragment(children) {
+  const result = jsx(Fragment, { children });
+  if (!(result instanceof DocumentFragment)) throw new TypeError("Expected a fragment");
+  return result;
+}
+
+test("JSX flattens children, preserves nodes, and maps DOM attributes and styles", () => {
+  const existing = document.createElement("strong");
+  const label = jsx("label", {
+    htmlFor: "field",
+    className: "caption",
+    hidden: true,
+    title: false,
+    style: { fontWeight: 700, "--accent": "red" },
+    children: ["Count: ", [null, false, 0, existing, [undefined, true, 2n]]],
+  });
+  if (!(label instanceof HTMLElement)) throw new TypeError("Expected a label");
+  expect(label.textContent).toBe("Count: 02");
+  expect(label.firstElementChild).toBe(existing);
+  expect(label.getAttribute("for")).toBe("field");
+  expect(label.className).toBe("caption");
+  expect(label.getAttribute("hidden")).toBe("");
+  expect(label.hasAttribute("title")).toBe(false);
+  expect(label.style.fontWeight).toBe("700");
+  expect(label.style.getPropertyValue("--accent")).toBe("red");
+  expect(jsxs).toBe(jsx);
+  expect(jsxDEV).toBe(jsx);
+});
+
+test("component keys override element keys and reject non-element results", () => {
+  const root = document.createElement("main");
+  const component = () => jsx("p", { key: "inner", children: "before" });
+  const original = jsx(component, null, "outer");
+  morphChildren(root, fragment(original));
+  morphChildren(root, fragment(jsx("p", { key: "outer", children: "after" })));
+  expect(root.firstChild).toBe(original);
+  expect(root.textContent).toBe("after");
+  expect(jsx(() => "text")).toBe("text");
+  expect(() => jsx(() => "text", null, "key")).toThrow("Keyed components must return one element");
+});
+
+test("JSX rejects async components and nested promised children", () => {
+  const message = "Async components and children are not supported";
+  const asyncComponent = async () => "later";
+  const promisedChild = Promise.resolve("later");
+  // oxlint-disable-next-line unicorn/no-thenable -- Exercise the unsupported input without awaiting it.
+  const thenable = { then: vi.fn() };
+
+  // @ts-expect-error Check runtime behavior for callers outside strict type checking.
+  expect(() => jsx(asyncComponent)).toThrow(message);
+  // @ts-expect-error Promises also cannot be returned from a synchronous component.
+  expect(() => jsx(() => promisedChild)).toThrow(message);
+  // @ts-expect-error Promises are invalid even inside nested child arrays.
+  expect(() => jsx(Fragment, { children: ["before", [promisedChild]] })).toThrow(message);
+  // @ts-expect-error Thenables are invalid children.
+  expect(() => jsx("div", { children: thenable })).toThrow(message);
+  expect(thenable.then).not.toHaveBeenCalled();
+});
+
+test("mount rejects promised view output without replacing existing DOM", async () => {
+  const root = document.createElement("main");
+  root.textContent = "existing";
+  // @ts-expect-error Promise-returning views are rejected by the public API.
+  const app = mount(root, () => Promise.resolve("later"));
+  await expect(app.rendered).rejects.toThrow("Async components and children are not supported");
+  expect(root.textContent).toBe("existing");
+  app.unmount();
+});
+
+test("reactive state preserves aliases, cycles, and non-plain object identity", () => {
+  const notify = vi.fn();
+  const shared = { count: 0 };
+  const date = new Date(0);
+  /** @type {{ shared: typeof shared, alias: typeof shared, date: Date, self?: object }} */
+  const raw = { shared, alias: shared, date };
+  raw.self = raw;
+  const state = reactive(raw, notify);
+  expect(state.shared).not.toBe(shared);
+  expect(state.shared).toBe(state.alias);
+  expect(state.self).toBe(state);
+  expect(state.date).toBe(date);
+  state.alias = state.shared;
+  expect(raw.alias).toBe(shared);
+  expect(notify).not.toHaveBeenCalled();
+  state.alias.count = 1;
+  expect(state.shared.count).toBe(1);
+  expect(notify).toHaveBeenCalledTimes(1);
+});
+
+test("reactive state distinguishes additions and deletions from no-ops and failed writes", () => {
+  const notify = vi.fn();
+  /** @type {{ value: number, optional?: undefined }} */
+  const raw = { value: NaN };
+  Object.defineProperty(raw, "locked", { value: 1 });
+  const state = reactive(raw, notify);
+  state.value = NaN;
+  delete state.optional;
+  expect(Reflect.set(state, "locked", 2)).toBe(false);
+  expect(Reflect.deleteProperty(state, "locked")).toBe(false);
+  expect(notify).not.toHaveBeenCalled();
+  state.optional = undefined;
+  delete state.optional;
+  state.value = 0;
+  state.value = -0;
+  expect(Object.is(raw.value, -0)).toBe(true);
+  expect(notify).toHaveBeenCalledTimes(4);
+  const array = reactive([1], notify);
+  array.push();
+  expect(notify).toHaveBeenCalledTimes(4);
+  array.push(2);
+  expect([...array]).toEqual([1, 2]);
+  expect(notify).toHaveBeenCalledTimes(5);
+  expect(() => reactive(new Map(), notify)).toThrow(TypeError);
+});
+
+test("keyed reconciliation reorders retained nodes, removes stale nodes, and replaces incompatible tags", () => {
+  const root = document.createElement("main");
+  const a = jsx("p", { children: "a" }, 0);
+  const b = jsx("p", { children: "b" }, "b");
+  const stale = jsx("p", {}, "stale");
+  const text = document.createTextNode("before");
+  morphChildren(root, fragment([a, text, b, stale]));
+  const replacement = jsx("section", {}, "b");
+  morphChildren(root, fragment([replacement, jsx("p", { children: "A" }, 0), "after"]));
+  expect(root.childNodes).toHaveLength(3);
+  expect(root.childNodes[0]).toBe(replacement);
+  expect(root.childNodes[1]).toBe(a);
+  expect(root.childNodes[2]).toBe(text);
+  expect(root.textContent).toBe("Aafter");
+  expect(root.contains(/** @type {Node} */ (b))).toBe(false);
+  expect(root.contains(/** @type {Node} */ (stale))).toBe(false);
+  morphChildren(root, root);
+  expect([...root.childNodes]).toEqual([replacement, a, text]);
+});
+
+test("duplicate target keys fail before changing the sibling list", () => {
+  const root = document.createElement("main");
+  root.innerHTML = "<p>original</p>";
+  const original = root.firstChild;
+  const target = fragment([jsx("p", {}, "x"), jsx("div", {}, "x")]);
+  expect(() => morphChildren(root, target)).toThrow("Duplicate sibling key");
+  expect(root.firstChild).toBe(original);
+  expect(root.textContent).toBe("original");
+  expect(target.childNodes).toHaveLength(2);
+});
+
+test("morph replaces stale listeners and removes attributes and JSX metadata behavior", () => {
+  const oldClick = vi.fn();
+  const newClick = vi.fn();
+  const button = fragment(
+    jsx("button", { onClick: oldClick, title: "old", disabled: true }),
+  ).querySelector("button");
+  const next = fragment(jsx("button", { onClick: newClick, className: "new" })).querySelector(
+    "button",
+  );
+  if (!button || !next) throw new TypeError("Expected buttons");
+  expect(morph(button, next)).toBe(button);
+  expect(button.getAttributeNames()).toEqual(["class"]);
+  button.click();
+  expect(oldClick).not.toHaveBeenCalled();
+  expect(newClick).toHaveBeenCalledTimes(1);
+  morph(button, document.createElement("button"));
+  button.click();
+  expect(newClick).toHaveBeenCalledTimes(1);
+});
+
+test("mount batches updates and restores controlled form values while retaining input identity", async () => {
+  const root = document.createElement("main");
+  const render = vi.fn(
+    /** @param {{ state: { value: string, checked: boolean } }} props */
+    ({ state }) => jsx("input", { type: "checkbox", value: state.value, checked: state.checked }),
+  );
+  const app = mount(root, render, { value: "before", checked: false });
+  expect(render).not.toHaveBeenCalled();
+  await app.rendered;
+  const input = root.querySelector("input");
+  if (!input) throw new TypeError("Expected an input");
+  input.value = "local edit";
+  app.state.value = "after";
+  const pending = app.rendered;
+  app.state.checked = true;
+  expect(app.rendered).toBe(pending);
+  await pending;
+  expect(render).toHaveBeenCalledTimes(2);
+  expect(root.firstChild).toBe(input);
+  expect(input.value).toBe("after");
+  expect(input.checked).toBe(true);
+  app.state.value = "pending";
+  const cancelled = app.rendered;
+  app.unmount();
+  app.unmount();
+  await cancelled;
+  app.state.value = "ignored";
+  expect(app.rendered).toBe(cancelled);
+  expect(render).toHaveBeenCalledTimes(2);
+  expect(root.childNodes).toHaveLength(0);
+});
+
+test("a failed render rejects its promise and a later update can render successfully", async () => {
+  const root = document.createElement("main");
+  const app = mount(
+    root,
+    ({ state }) => {
+      if (state.fail) throw new Error("render failed");
+      return state.text;
+    },
+    { fail: false, text: "before" },
+  );
+  await app.rendered;
+  app.state.fail = true;
+  await expect(app.rendered).rejects.toThrow("render failed");
+  expect(root.textContent).toBe("before");
+  app.state.fail = false;
+  app.state.text = "after";
+  await app.rendered;
+  expect(root.textContent).toBe("after");
+  app.unmount();
+});
+
+test("hash routing decodes segments, ignores query-only changes, and unsubscribes on unmount", async () => {
+  const root = document.createElement("main");
+  const removeListener = vi.spyOn(window, "removeEventListener");
+  const app = mount(root, {
+    routes: {
+      "/": () => "home",
+      "/items/:id": ({ path, params }) => [path, " → ", params.id],
+    },
+    notFound: ({ path, params }) => ["missing ", path, " ", Object.keys(params).length],
+  });
+  /** @param {string} hash */
+  function navigate(hash) {
+    window.history.replaceState(null, "", hash);
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    return app.rendered;
+  }
+
+  try {
+    await app.rendered;
+    expect(root.textContent).toBe("home");
+    await navigate("#/items/a%2Fb?tab=1");
+    expect(root.textContent).toBe("/items/a%2Fb → a/b");
+    const rendered = app.rendered;
+    expect(navigate("#/items/a%2Fb?tab=2")).toBe(rendered);
+    await navigate("#/items/");
+    expect(root.textContent).toBe("missing /items/ 0");
+    await navigate("#/items/%ZZ");
+    expect(root.textContent).toBe("missing /items/%ZZ 0");
+    app.unmount();
+    expect(removeListener).toHaveBeenCalledWith("hashchange", expect.any(Function));
+    const stopped = app.rendered;
+    expect(navigate("#/items/another")).toBe(stopped);
+    expect(root.childNodes).toHaveLength(0);
+  } finally {
+    app.unmount();
+  }
+});
