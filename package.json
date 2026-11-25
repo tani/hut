@@ -12,24 +12,30 @@
     "url": "git+https://github.com/tani/nova-jsx.git"
   },
   "files": [
+    "index.js",
+    "index.d.ts",
+    "jsx-runtime.js",
+    "jsx-runtime.d.ts",
+    "jsx-dev-runtime.js",
+    "jsx-dev-runtime.d.ts",
     "nova-jsx.js",
     "nova-jsx.d.ts"
   ],
   "type": "module",
-  "main": "nova-jsx.js",
-  "types": "./nova-jsx.d.ts",
+  "main": "index.js",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
-      "types": "./nova-jsx.d.ts",
-      "default": "./nova-jsx.js"
+      "types": "./index.d.ts",
+      "default": "./index.js"
     },
     "./jsx-runtime": {
-      "types": "./nova-jsx.d.ts",
-      "default": "./nova-jsx.js"
+      "types": "./jsx-runtime.d.ts",
+      "default": "./jsx-runtime.js"
     },
     "./jsx-dev-runtime": {
-      "types": "./nova-jsx.d.ts",
-      "default": "./nova-jsx.js"
+      "types": "./jsx-dev-runtime.d.ts",
+      "default": "./jsx-dev-runtime.js"
     }
   },
   "scripts": {

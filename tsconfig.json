@@ -9,5 +9,5 @@
     "strict": true,
     "noEmit": true
   },
-  "include": ["nova-jsx.js", "nova-jsx.test.js"]
+  "include": ["*.js", "*.d.ts"]
 }

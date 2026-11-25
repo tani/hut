@@ -4,10 +4,21 @@ nova-jsx renders JSX to DOM, updates it from reactive state, and routes by URL h
 
 ## Quick start
 
-Install nova-jsx with `npm install nova-jsx`. Set the JSX import source to
-`nova-jsx` in your toolchain's automatic JSX transform. For TypeScript, use
-`"jsx": "react-jsx"` and `"jsxImportSource": "nova-jsx"` in
-`compilerOptions`.
+```sh
+npm install nova-jsx
+```
+
+Set the import source for your toolchain's automatic JSX transform to
+`nova-jsx`. For TypeScript, add these options to `tsconfig.json`.
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "nova-jsx"
+  }
+}
+```
 
 With a `<main id="app"></main>` in your HTML, use this JSX module as the entry
 point.
@@ -31,9 +42,8 @@ mount(root, ({ state }) => <button onClick={() => state.count++}>Count: {state.c
 - Use stable sibling keys to preserve compatible DOM nodes when a list is
   reordered. Keys must be unique among siblings. A component with an explicit
   key must return one element.
-- `reactive(initial, notify)` observes writes and deletions on plain objects and
-  arrays, including nested ones. `mount(root, view, initial)` wraps the initial
-  state automatically and returns `{ state, rendered, unmount }`.
+- `mount(root, view, initial)` makes plain objects and arrays in the initial
+  state reactive and returns `{ state, rendered, unmount }`.
 
 The initial render and later updates run in a microtask. Multiple state writes
 before that microtask are batched. Read `app.rendered` after scheduling an update
@@ -46,6 +56,7 @@ route updates.
 Use `h(type, props, ...children)` or `tags.tagName(props, ...children)` to create
 elements in JavaScript files. Pass `null` when the element has no props. Both
 accept nested arrays of children and the same props as JSX, including `key`.
+Use `h(Fragment, null, ...children)` to group siblings without a wrapper.
 
 ```js
 import { h, tags } from "nova-jsx";
@@ -82,8 +93,10 @@ Pass a route table to `mount` in place of the view function. Route handlers rece
 `{ path, params, state }`. Each `:name` captures one non-empty path segment.
 For example, `#/teams/blue%20sky/members/42?tab=details` matches
 `/teams/:team/members/:member` with `params.team` set to `"blue sky"` and
-`params.member` set to `"42"`. The query string is ignored when matching routes. Use the optional `[NotFound]` key to render a fallback.
-Unmatched paths render nothing by default.
+`params.member` set to `"42"`. The query string is ignored when matching routes.
+
+Use the optional `[NotFound]` key to render a fallback. Unmatched paths render
+nothing by default.
 
 ```jsx
 import { mount, NotFound } from "nova-jsx";
@@ -98,6 +111,17 @@ mount(root, {
   [NotFound]: () => "Page not found",
 });
 ```
+
+## Package exports
+
+| Import path                | Exports                                      |
+| -------------------------- | -------------------------------------------- |
+| `nova-jsx`                 | `mount`, `NotFound`, `h`, `tags`, `Fragment` |
+| `nova-jsx/jsx-runtime`     | `jsx`, `jsxs`, `Fragment`                    |
+| `nova-jsx/jsx-dev-runtime` | `jsxDEV`, `Fragment`                         |
+
+Import application APIs from `nova-jsx`. The automatic JSX transform imports
+the appropriate runtime for you.
 
 ## License
 
