@@ -138,33 +138,38 @@ export const jsxs = jsx;
 export const jsxDEV = jsx;
 
 /**
- * Creates JSX output with positional children.
+ * Creates JSX output with positional children and optional leading props.
  *
  * @example
  * ```js
  * const button = h("button", { onClick: save }, "Save");
+ * const label = h("span", "Hello");
  * ```
  *
  * @template {Props} P
  * @param {string | typeof Fragment | ((props: P) => Child)} type
- * @param {P | null | undefined} props
+ * @param {P | Child} [props]
  * @param {...Child} children
  */
 export function h(type, props, ...children) {
-  const { key, ...rest } = props ?? {};
+  if (props != null && (typeof props !== "object" || Array.isArray(props) || props instanceof Node)) {
+    children.unshift(/** @type {Child} */ (props));
+    props = undefined;
+  }
+  const { key, ...rest } = /** @type {P} */ (props ?? {});
   /** @type {unknown[]} */
   const nested = children;
   const flat = /** @type {Child[]} */ (nested.flat(Infinity));
   return jsx(type, /** @type {P} */ ({ ...rest, children: flat.length > 1 ? flat : flat[0] }), key);
 }
 
-/** Element factories such as `tags.div(null, "Hello")`. */
+/** Element factories such as `tags.div("Hello")`. */
 export const tags =
-  /** @type {Record<string, (props?: Props | null, ...children: Child[]) => HTMLElement>} */ (
+  /** @type {Record<string, (props?: Props | Child, ...children: Child[]) => HTMLElement>} */ (
     new Proxy(Object.create(null), {
       get:
         (_, tag) =>
-        (/** @type {Props | null | undefined} */ props, /** @type {Child[]} */ ...children) =>
+        (/** @type {Props | Child} */ props, /** @type {Child[]} */ ...children) =>
           h(String(tag), props, ...children),
     })
   );

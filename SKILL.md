@@ -15,6 +15,8 @@ nova-jsx creates browser DOM nodes from JSX and updates them from reactive
 state. Configure your automatic JSX transform with `nova-jsx` as its import
 source. In TypeScript, set `jsx` to `"react-jsx"` and `jsxImportSource` to
 `"nova-jsx"`. In plain JavaScript, use `h` and `tags` to create elements directly.
+The leading props object is optional: `h("p", "Hello")`, `tags.p("Hello")`,
+and `h(Fragment, tags.p("First"), tags.p("Second"))` need no placeholder.
 
 ## Application design
 

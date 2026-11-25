@@ -55,10 +55,13 @@ route updates.
 
 ## Creating elements in JavaScript
 
-Use `h(type, props, ...children)` or `tags.tagName(props, ...children)` to create
-elements in JavaScript files. Pass `null` when the element has no props. Both
-accept nested arrays of children and the same props as JSX, including `key`.
-Use `h(Fragment, null, ...children)` to group siblings without a wrapper.
+Use `h(type, ...children)` or `h(type, props, ...children)` to create
+elements in JavaScript files. The same optional leading props object is supported
+by `tags.tagName(...children)`. Only the first argument after the type can be
+props; DOM nodes, arrays, and primitive values are children. An explicit
+`null` or `undefined` placeholder is also accepted. Both accept nested arrays
+of children and the same props as JSX, including `key`.
+Use `h(Fragment, ...children)` to group siblings without a wrapper.
 
 ```js
 import { h, tags } from "nova-jsx";
@@ -67,6 +70,7 @@ const list = tags.ul(
   { className: "items" },
   h("li", { key: "first" }, "First item"),
   tags.li({ key: "second" }, "Second item"),
+  tags.li("Third item"),
 );
 
 document.body.append(list);

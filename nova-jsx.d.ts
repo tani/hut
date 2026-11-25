@@ -69,31 +69,31 @@ export declare const jsxDEV: typeof jsx;
 
 export declare function h(
   type: typeof Fragment,
-  props: Props | null | undefined,
+  props?: Props | Child,
   ...children: Child[]
 ): DocumentFragment;
 export declare function h<Tag extends keyof HTMLElementTagNameMap>(
   type: Tag,
-  props: Props | null | undefined,
+  props?: Props | Child,
   ...children: Child[]
 ): HTMLElementTagNameMap[Tag];
 export declare function h(
   type: string,
-  props: Props | null | undefined,
+  props?: Props | Child,
   ...children: Child[]
 ): HTMLElement;
 export declare function h<P extends Props>(
   type: string | typeof Fragment | ((props: P) => Child),
-  props: P | null | undefined,
+  props?: P | Child,
   ...children: Child[]
 ): Child;
 
 export declare const tags: {
   [Tag in keyof HTMLElementTagNameMap]: (
-    props?: Props | null,
+    props?: Props | Child,
     ...children: Child[]
   ) => HTMLElementTagNameMap[Tag];
-} & Record<string, (props?: Props | null, ...children: Child[]) => HTMLElement>;
+} & Record<string, (props?: Props | Child, ...children: Child[]) => HTMLElement>;
 
 export declare function reactive<State extends object>(initial: State, notify: () => void): State;
 export declare function morph(oldNode: Node, nextNode: Node): Node;

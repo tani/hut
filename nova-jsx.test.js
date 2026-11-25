@@ -463,6 +463,37 @@ test("h and tags build nodes with positional children and preserve keys", () => 
   expect(tags["demo-panel"]?.(null).localName).toBe("demo-panel");
 });
 
+test("h and tags accept children without a leading props object", () => {
+  const existing = tags.strong("node");
+  const tree = h("div", "text", [1, [2n, null, false]], existing);
+  expect(tree.outerHTML).toBe("<div>text12<strong>node</strong></div>");
+  expect(tree.lastChild).toBe(existing);
+  expect(h("div").outerHTML).toBe("<div></div>");
+  expect(h("div", null, "text").textContent).toBe("text");
+  expect(h("div", undefined, "text").textContent).toBe("text");
+  expect(h("div", false, "text").textContent).toBe("text");
+  expect(h("div", 0).textContent).toBe("0");
+  expect(h("div", Symbol("x")).textContent).toBe("Symbol(x)");
+  expect(h("div", [tags.span("a"), "b"]).innerHTML).toBe("<span>a</span>b");
+
+  const node = tags.span("first");
+  expect(tags.div(node, "second").firstChild).toBe(node);
+  expect(tags.div(["a", ["b"]]).textContent).toBe("ab");
+  expect(tags.div().outerHTML).toBe("<div></div>");
+  expect(tags.div({ className: "box" }, "text").outerHTML).toBe('<div class="box">text</div>');
+  expect(h(Fragment, "a", tags.span("b")).textContent).toBe("ab");
+});
+
+test("h passes normalized children and optional props to components", () => {
+  /** @param {{ children?: import("./nova-jsx.js").Child, title?: string }} props */
+  const component = ({ children, title }) => h("div", { title }, children);
+  expect(h(component, "text").outerHTML).toBe("<div>text</div>");
+  expect(h(component, { title: "label" }, ["a", "b"]).outerHTML).toBe(
+    '<div title="label">ab</div>',
+  );
+  expect(h(component).outerHTML).toBe("<div></div>");
+});
+
 test("JSX runtime subpaths resolve to the public entry point", async () => {
   const [root, runtime, development] = await Promise.all([
     import("nova-jsx"),
