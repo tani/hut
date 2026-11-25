@@ -379,7 +379,7 @@ test("h and tags build nodes with positional children and preserve keys", () => 
   expect(button.textContent).toBe("Saved");
   button.click();
   expect(click).toHaveBeenCalledTimes(1);
-  expect(tags["demo-panel"](null).localName).toBe("demo-panel");
+  expect(tags["demo-panel"]?.(null).localName).toBe("demo-panel");
 });
 
 test("package entry points expose only their public API", async () => {

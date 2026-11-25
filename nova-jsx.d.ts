@@ -101,7 +101,7 @@ export declare function morphChildren(parent: Element | DocumentFragment, target
 
 export type RouteProps<State extends object> = {
   path: string;
-  params: Record<string, string>;
+  params: Record<string, string | undefined>;
   state: State;
 };
 
@@ -111,12 +111,21 @@ export type Router<State extends object> = Record<string, View<State>> & {
   [NotFound]?: View<State>;
 };
 
-export declare function mount<State extends object = object>(
-  root: Element | DocumentFragment,
-  app: ((props: { state: State }) => Child) | Router<State>,
-  initial?: State,
-): {
+type App<State extends object> = ((props: { state: State }) => Child) | Router<State>;
+
+type MountedApp<State extends object> = {
   state: State;
-  readonly rendered: Promise<void> | undefined;
+  readonly rendered: Promise<void>;
   unmount(): void;
 };
+
+export declare function mount(
+  root: Element | DocumentFragment,
+  app: App<object>,
+  initial?: undefined,
+): MountedApp<object>;
+export declare function mount<State extends object>(
+  root: Element | DocumentFragment,
+  app: App<NoInfer<State>>,
+  initial: State,
+): MountedApp<State>;

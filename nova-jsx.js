@@ -358,7 +358,7 @@ export function morphChildren(parent, target) {
 
 /**
  * @template {object} State
- * @typedef {{ path: string, params: Record<string, string>, state: State }} RouteProps
+ * @typedef {{ path: string, params: Record<string, string | undefined>, state: State }} RouteProps
  */
 
 /**
@@ -408,7 +408,7 @@ export function morphChildren(parent, target) {
 export function mount(root, app, initial = /** @type {State} */ ({})) {
   let active = true;
   let pending = false;
-  /** @type {Promise<void> | undefined} */
+  /** @type {Promise<void>} */
   let rendered;
   /** @type {(props: { state: State }) => Child} */
   let render;
