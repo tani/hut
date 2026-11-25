@@ -1,42 +1,33 @@
 # Nanoapp
 
-Nanoapp is a browser library for rendering DOM nodes from synchronous components,
-updating them from reactive state, and routing by URL hash.
+Nanoapp renders JSX to DOM, updates it from reactive state, and routes by URL hash.
 
 ## Quick start
 
-Save this HTML next to `nanoapp.js` and serve the directory over HTTP.
+Install Nanoapp with `npm install nanoapp`. Set the JSX import source to
+`nanoapp` in your toolchain's automatic JSX transform. For TypeScript, use
+`"jsx": "react-jsx"` and `"jsxImportSource": "nanoapp"` in
+`compilerOptions`.
 
-```html
-<!doctype html>
-<html lang="en">
-  <meta charset="utf-8" />
-  <title>Nanoapp counter</title>
-  <main id="app"></main>
-  <script type="module">
-    import { jsx, mount } from "./nanoapp.js";
+With a `<main id="app"></main>` in your HTML, use this JSX module as the entry
+point.
 
-    mount(
-      document.querySelector("#app"),
-      ({ state }) =>
-        jsx("button", {
-          onClick: () => state.count++,
-          children: ["Count: ", state.count],
-        }),
-      { count: 0 },
-    );
-  </script>
-</html>
+```jsx
+import { mount } from "nanoapp";
+
+const root = document.querySelector("#app");
+if (!root) throw new Error("Missing mount point");
+
+mount(root, ({ state }) => <button onClick={() => state.count++}>Count: {state.count}</button>, {
+  count: 0,
+});
 ```
 
 ## Rendering and state
 
-- `jsx(type, props, key)` creates a DOM element, calls a synchronous component,
-  or creates a document fragment when passed `Fragment`. `jsxs` and `jsxDEV`
-  are aliases. Use the function calls directly in the browser.
+- Use `<>…</>` to group siblings without a wrapper element.
 - Children can be DOM nodes, text values, or nested arrays. Booleans and nullish
-  values are skipped. Components and children must be synchronous. Promises and
-  thenables are rejected.
+  values are skipped.
 - Use stable sibling keys to preserve compatible DOM nodes when a list is
   reordered. Keys must be unique among siblings. A component with an explicit
   key must return one element.
@@ -57,11 +48,11 @@ Pass a route table to `mount` in place of the view function. Route handlers rece
 `/items/:id` with `params.id` set to `"a b"`. The query string is ignored when
 matching routes.
 
-```js
-mount(document.querySelector("#app"), {
+```jsx
+mount(root, {
   routes: {
     "/": () => "Home",
-    "/items/:id": ({ params }) => jsx("h1", { children: ["Item ", params.id] }),
+    "/items/:id": ({ params }) => <h1>Item {params.id}</h1>,
   },
   notFound: () => "Page not found",
 });

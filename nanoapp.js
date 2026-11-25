@@ -1,13 +1,60 @@
+/**
+ * @file Render JSX to DOM with synchronous components and reactive state.
+ * Configure the automatic JSX transform with `jsxImportSource: "nanoapp"`.
+ * In TypeScript, set `jsx: "react-jsx"` for this transform.
+ *
+ * @example
+ * ```tsx
+ * import { mount } from "nanoapp";
+ *
+ * const root = document.querySelector("main");
+ * if (!root) throw new Error("Missing mount point");
+ *
+ * mount(
+ *   root,
+ *   ({ state }) => <button onClick={() => state.count++}>Count: {state.count}</button>,
+ *   { count: 0 },
+ * );
+ * ```
+ */
+
+/** Groups children in a document fragment without adding a wrapper element. */
 export const Fragment = Symbol("Fragment");
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
 /** @typedef {Record<string, unknown> & { children?: Child }} Props */
 /** @typedef {{ key: unknown, events: Map<string, EventListener>, props: Props }} ElementMetadata */
 
-/** @type {WeakMap<Node, ElementMetadata>} */
+/**
+ * Stores keys, listeners, and props for nodes created by JSX. The reconciler
+ * reads this map when updating existing nodes.
+ * @type {WeakMap<Node, ElementMetadata>}
+ */
 export const metadata = new WeakMap();
+/** Form properties that JSX sets on DOM objects and reapplies after reconciliation. */
 export const formProps = ["value", "checked", "selected"];
 
 /**
+ * The JSX transform calls this function to create an element, invoke a
+ * synchronous component, or create a fragment.
+ * Nested child arrays are flattened. Nullish values and booleans are skipped.
+ * Use `onClick` for events, `className` for CSS classes, and an object for styles.
+ * Use stable, unique keys among siblings to preserve node identity when reordering.
+ * A keyed component must return one element. Promises and thenables are unsupported.
+ *
+ * @example
+ * ```tsx
+ * const items = [{ id: "ada", label: "Ada" }, { id: "lin", label: "Lin" }];
+ * const list = <ul>{items.map(({ id, label }) => <li key={id}>{label}</li>)}</ul>;
+ * ```
+ *
+ * @example
+ * ```tsx
+ * function Label({ name }: { name: string }) {
+ *   return <strong>{name}</strong>;
+ * }
+ * const content = <>Hello, <Label name="Ada" /></>;
+ * ```
+ *
  * @template {Props} P
  * @param {string | typeof Fragment | ((props: P) => Child)} type
  * @param {P | null} [props]
@@ -93,7 +140,9 @@ function appendChildren(parent, children) {
   return parent;
 }
 
+/** JSX runtime alias for elements with multiple children. */
 export const jsxs = jsx;
+/** JSX development runtime alias. */
 export const jsxDEV = jsx;
 
 /** @param {unknown} value @returns {value is object} */
@@ -104,6 +153,17 @@ function observable(value) {
 }
 
 /**
+ * Wraps a plain object or array and calls `notify` when a property is added,
+ * changed, or deleted through the proxy. Nested plain objects and arrays are
+ * wrapped on access. Mutate the returned proxy to trigger notifications.
+ * `mount` creates this proxy automatically for app state.
+ *
+ * @example
+ * ```js
+ * const state = reactive({ filter: { query: "" } }, () => console.log("Changed"));
+ * state.filter.query = "Ada";
+ * ```
+ *
  * @template {object} State
  * @param {State} initial
  * @param {() => void} notify
@@ -164,7 +224,23 @@ function compatible(a, b) {
   );
 }
 
-/** @param {Node} oldNode @param {Node} nextNode */
+/**
+ * Updates a compatible node in place, or replaces it when it has a parent.
+ * Returns the node callers should use after the update.
+ *
+ * @example
+ * ```tsx
+ * const before = <p>Loading…</p>;
+ * const next = <p>Ready</p>;
+ * if (before instanceof Node && next instanceof Node) {
+ *   document.body.append(before);
+ *   morph(before, next);
+ * }
+ * ```
+ *
+ * @param {Node} oldNode
+ * @param {Node} nextNode
+ */
 export function morph(oldNode, nextNode) {
   if (!compatible(oldNode, nextNode)) {
     oldNode.parentNode?.replaceChild(nextNode, oldNode);
@@ -205,6 +281,18 @@ export function morph(oldNode, nextNode) {
 }
 
 /**
+ * Reconciles the children of `parent` against those of `target`.
+ * It reads the target's children in order and can move new nodes out of it.
+ * Duplicate target sibling keys throw before reconciliation begins.
+ *
+ * @example
+ * ```tsx
+ * const desired = <>Latest: <strong>Ready</strong></>;
+ * if (desired instanceof DocumentFragment) {
+ *   morphChildren(document.body, desired);
+ * }
+ * ```
+ *
  * @param {Element | DocumentFragment} parent
  * @param {Node} target
  */
@@ -254,6 +342,34 @@ export function morphChildren(parent, target) {
  */
 
 /**
+ * Mounts a synchronous view or a hash route table and returns reactive state,
+ * a render promise, and an unmount function. The first render and later updates
+ * run in microtasks. Multiple writes before a render are batched.
+ *
+ * Read `app.rendered` after a state change to await that DOM update. The promise
+ * rejects if rendering fails. Call `app.unmount()` to clear the root and stop updates.
+ *
+ * @example
+ * ```tsx
+ * const app = mount(root, ({ state }) => <p>{state.message}</p>, {
+ *   message: "Hello",
+ * });
+ * app.state.message = "Updated";
+ * await app.rendered;
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // The hash #/items/a%20b?tab=details supplies "a b" as params.id.
+ * mount(root, {
+ *   routes: {
+ *     "/": () => "Home",
+ *     "/items/:id": ({ params }) => <h1>{params.id}</h1>,
+ *   },
+ *   notFound: () => "Page not found",
+ * });
+ * ```
+ *
  * @template {object} [State=object]
  * @param {Element | DocumentFragment} root
  * @param {((props: { state: State }) => Child) | Router<State>} app
