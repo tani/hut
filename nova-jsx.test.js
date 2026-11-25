@@ -160,7 +160,7 @@ test("morph replaces stale listeners and removes attributes and JSX metadata beh
   expect(newClick).toHaveBeenCalledTimes(1);
 });
 
-test("morph aborts only the previous JSX listeners, not external or target listeners", () => {
+test("morph updates only JSX listeners, not external or target listeners", () => {
   const external = vi.fn();
   const before = vi.fn();
   const after = vi.fn();
@@ -179,6 +179,25 @@ test("morph aborts only the previous JSX listeners, not external or target liste
   target.click();
   expect(after).toHaveBeenCalledTimes(3);
   expect(external).toHaveBeenCalledTimes(2);
+});
+
+test("morph leaves unchanged listeners registered and updates only changed listeners", () => {
+  const click = vi.fn();
+  const before = vi.fn();
+  const after = vi.fn();
+  const button = jsx("button", { onClick: click, onFocus: before });
+  const target = jsx("button", { onClick: click, onFocus: after });
+  const add = vi.spyOn(button, "addEventListener");
+  const remove = vi.spyOn(button, "removeEventListener");
+
+  morph(button, target);
+  expect(remove.mock.calls).toEqual([["focus", before]]);
+  expect(add.mock.calls).toEqual([["focus", after]]);
+  button.click();
+  button.dispatchEvent(new Event("focus"));
+  expect(click).toHaveBeenCalledTimes(1);
+  expect(before).not.toHaveBeenCalled();
+  expect(after).toHaveBeenCalledTimes(1);
 });
 
 test("range deletion removes only stale siblings, including text nodes", () => {

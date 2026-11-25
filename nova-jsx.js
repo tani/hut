@@ -29,7 +29,7 @@ export const NotFound = Symbol("nova-jsx.NotFound");
 
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
 /** @typedef {Record<string, unknown> & { children?: Child, key?: unknown, preserve?: boolean }} Props */
-/** @typedef {{ key: unknown, events: Map<string, EventListener>, controller: AbortController | undefined, props: Props }} ElementMetadata */
+/** @typedef {{ key: unknown, events: Map<string, EventListener>, props: Props }} ElementMetadata */
 
 /**
  * Stores keys, listeners, and props for nodes created by JSX. The reconciler
@@ -78,7 +78,7 @@ export function jsx(type, props, key) {
     if (!(result instanceof Element)) {
       throw new TypeError("Keyed components must return one element");
     }
-    metadata.set(result, { events: new Map(), controller: undefined, props: {}, ...metadata.get(result), key });
+    metadata.set(result, { events: new Map(), props: {}, ...metadata.get(result), key });
     return result;
   }
 
@@ -96,6 +96,7 @@ export function jsx(type, props, key) {
       const event = name.slice(2).toLowerCase();
       const listener = /** @type {EventListener} */ (value);
       events.set(event, listener);
+      element.addEventListener(event, listener);
     } else if (name === "style" && value && typeof value === "object") {
       for (const [property, entry] of Object.entries(value)) {
         if (property.includes("-")) element.style.setProperty(property, String(entry));
@@ -111,7 +112,7 @@ export function jsx(type, props, key) {
   for (const name of formProps) {
     if (name in props && name in element) Reflect.set(element, name, props[name]);
   }
-  metadata.set(element, { key: key ?? props.key, events, controller: bindEvents(element, events), props });
+  metadata.set(element, { key: key ?? props.key, events, props });
   return element;
 }
 
@@ -129,19 +130,6 @@ function appendChildren(parent, children) {
     }
   }
   return parent;
-}
-
-/**
- * @param {Element} element
- * @param {Map<string, EventListener>} events
- */
-function bindEvents(element, events) {
-  if (!events.size) return undefined;
-  const controller = new AbortController();
-  for (const [name, listener] of events) {
-    element.addEventListener(name, listener, { signal: controller.signal });
-  }
-  return controller;
 }
 
 /** JSX runtime alias for elements with multiple children. */
@@ -297,12 +285,15 @@ export function morph(oldNode, nextNode) {
     if (oldNode.getAttribute(name) !== value) oldNode.setAttribute(name, value);
   }
 
-  metadata.get(oldNode)?.controller?.abort();
-  if (after) {
-    metadata.set(oldNode, { ...after, controller: bindEvents(oldNode, after.events) });
-  } else {
-    metadata.delete(oldNode);
+  const before = metadata.get(oldNode);
+  for (const [name, listener] of before?.events ?? []) {
+    if (after?.events.get(name) !== listener) oldNode.removeEventListener(name, listener);
   }
+  for (const [name, listener] of after?.events ?? []) {
+    if (before?.events.get(name) !== listener) oldNode.addEventListener(name, listener);
+  }
+  if (after) metadata.set(oldNode, after);
+  else metadata.delete(oldNode);
 
   morphChildren(oldNode, nextNode);
   for (const name of formProps) {

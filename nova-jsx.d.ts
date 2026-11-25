@@ -41,7 +41,6 @@ export declare namespace JSX {
 export type ElementMetadata = {
   key: unknown;
   events: Map<string, EventListener>;
-  controller: AbortController | undefined;
   props: Props;
 };
 
