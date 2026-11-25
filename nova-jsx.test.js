@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, expect, test, vi } from "vite-plus/test";
-import { Fragment, jsx, jsxDEV, jsxs, morph, morphChildren, mount, reactive } from "./nanoapp.js";
+import { Fragment, jsx, jsxDEV, jsxs, morph, morphChildren, mount, reactive } from "./nova-jsx.js";
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -9,7 +9,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** @param {import("./nanoapp.js").Child} children */
+/** @param {import("./nova-jsx.js").Child} children */
 function fragment(children) {
   const result = jsx(Fragment, { children });
   if (!(result instanceof DocumentFragment)) throw new TypeError("Expected a fragment");
@@ -271,7 +271,7 @@ test("hash routing captures multiple named segments and discards partial matches
   window.history.replaceState(null, "", "#/teams/blue%20sky/members/a%2Fb?tab=details");
   const root = document.createElement("main");
   const member = vi.fn(
-    /** @param {import("./nanoapp.js").RouteProps<object>} props */
+    /** @param {import("./nova-jsx.js").RouteProps<object>} props */
     ({ params }) => [params.team, " / ", params.member],
   );
   const notFound = vi.fn(() => "missing");

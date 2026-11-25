@@ -1,19 +1,19 @@
-# Nanoapp
+# nova-jsx
 
-Nanoapp renders JSX to DOM, updates it from reactive state, and routes by URL hash.
+nova-jsx renders JSX to DOM, updates it from reactive state, and routes by URL hash.
 
 ## Quick start
 
-Install Nanoapp with `npm install nanoapp`. Set the JSX import source to
-`nanoapp` in your toolchain's automatic JSX transform. For TypeScript, use
-`"jsx": "react-jsx"` and `"jsxImportSource": "nanoapp"` in
+Install nova-jsx with `npm install nova-jsx`. Set the JSX import source to
+`nova-jsx` in your toolchain's automatic JSX transform. For TypeScript, use
+`"jsx": "react-jsx"` and `"jsxImportSource": "nova-jsx"` in
 `compilerOptions`.
 
 With a `<main id="app"></main>` in your HTML, use this JSX module as the entry
 point.
 
 ```jsx
-import { mount } from "nanoapp";
+import { mount } from "nova-jsx";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing mount point");

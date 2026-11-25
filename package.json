@@ -1,5 +1,5 @@
 {
-  "name": "nanoapp",
+  "name": "nova-jsx",
   "version": "1.0.0",
   "description": "Reactive DOM rendering and hash routing for the browser.",
   "homepage": "https://github.com/tani/nanoapp#readme",
@@ -11,24 +11,24 @@
     "url": "git+https://github.com/tani/nanoapp.git"
   },
   "files": [
-    "nanoapp.js",
-    "nanoapp.d.ts"
+    "nova-jsx.js",
+    "nova-jsx.d.ts"
   ],
   "type": "module",
-  "main": "nanoapp.js",
-  "types": "./nanoapp.d.ts",
+  "main": "nova-jsx.js",
+  "types": "./nova-jsx.d.ts",
   "exports": {
     ".": {
-      "types": "./nanoapp.d.ts",
-      "default": "./nanoapp.js"
+      "types": "./nova-jsx.d.ts",
+      "default": "./nova-jsx.js"
     },
     "./jsx-runtime": {
-      "types": "./nanoapp.d.ts",
-      "default": "./nanoapp.js"
+      "types": "./nova-jsx.d.ts",
+      "default": "./nova-jsx.js"
     },
     "./jsx-dev-runtime": {
-      "types": "./nanoapp.d.ts",
-      "default": "./nanoapp.js"
+      "types": "./nova-jsx.d.ts",
+      "default": "./nova-jsx.js"
     }
   },
   "scripts": {

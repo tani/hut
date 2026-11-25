@@ -1,11 +1,11 @@
 /**
  * @file Render JSX to DOM with synchronous components and reactive state.
- * Configure the automatic JSX transform with `jsxImportSource: "nanoapp"`.
+ * Configure the automatic JSX transform with `jsxImportSource: "nova-jsx"`.
  * In TypeScript, set `jsx: "react-jsx"` for this transform.
  *
  * @example
  * ```tsx
- * import { mount } from "nanoapp";
+ * import { mount } from "nova-jsx";
  *
  * const root = document.querySelector("main");
  * if (!root) throw new Error("Missing mount point");

@@ -9,5 +9,5 @@
     "strict": true,
     "noEmit": true
   },
-  "include": ["nanoapp.js", "nanoapp.test.js"]
+  "include": ["nova-jsx.js", "nova-jsx.test.js"]
 }
