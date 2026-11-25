@@ -65,17 +65,12 @@ export function jsx(type, props, key) {
 
   if (typeof type === "function") {
     const result = type(props);
-    rejectAsyncChild(result);
     if (key == null) return result;
     if (!(result instanceof Element)) {
       throw new TypeError("Keyed components must return one element");
     }
     metadata.set(result, { events: new Map(), props: {}, ...metadata.get(result), key });
     return result;
-  }
-
-  if (type !== Fragment && typeof type !== "string") {
-    throw new TypeError("Invalid JSX type");
   }
 
   if (type === Fragment) return appendChildren(document.createDocumentFragment(), props.children);
@@ -111,18 +106,6 @@ export function jsx(type, props, key) {
   return element;
 }
 
-/** @param {unknown} value */
-function rejectAsyncChild(value) {
-  if (
-    value !== null &&
-    (typeof value === "object" || typeof value === "function") &&
-    "then" in value &&
-    typeof value.then === "function"
-  ) {
-    throw new TypeError("Async components and children are not supported");
-  }
-}
-
 /**
  * @template {HTMLElement | DocumentFragment} Parent
  * @param {Parent} parent
@@ -130,7 +113,6 @@ function rejectAsyncChild(value) {
  */
 function appendChildren(parent, children) {
   for (const child of [children].flat(Infinity)) {
-    rejectAsyncChild(child);
     if (child instanceof Node) parent.append(child);
     else if (child != null && typeof child !== "boolean") {
       // oxlint-disable-next-line typescript/no-base-to-string -- Preserve JSX child coercion.

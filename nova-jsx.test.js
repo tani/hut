@@ -51,34 +51,6 @@ test("component keys override element keys and reject non-element results", () =
   expect(() => jsx(() => "text", null, "key")).toThrow("Keyed components must return one element");
 });
 
-test("JSX rejects async components and nested promised children", () => {
-  const message = "Async components and children are not supported";
-  const asyncComponent = async () => "later";
-  const promisedChild = Promise.resolve("later");
-  // oxlint-disable-next-line unicorn/no-thenable -- Exercise the unsupported input without awaiting it.
-  const thenable = { then: vi.fn() };
-
-  // @ts-expect-error Check runtime behavior for callers outside strict type checking.
-  expect(() => jsx(asyncComponent)).toThrow(message);
-  // @ts-expect-error Promises also cannot be returned from a synchronous component.
-  expect(() => jsx(() => promisedChild)).toThrow(message);
-  // @ts-expect-error Promises are invalid even inside nested child arrays.
-  expect(() => jsx(Fragment, { children: ["before", [promisedChild]] })).toThrow(message);
-  // @ts-expect-error Thenables are invalid children.
-  expect(() => jsx("div", { children: thenable })).toThrow(message);
-  expect(thenable.then).not.toHaveBeenCalled();
-});
-
-test("mount rejects promised view output without replacing existing DOM", async () => {
-  const root = document.createElement("main");
-  root.textContent = "existing";
-  // @ts-expect-error Promise-returning views are rejected by the public API.
-  const app = mount(root, () => Promise.resolve("later"));
-  await expect(app.rendered).rejects.toThrow("Async components and children are not supported");
-  expect(root.textContent).toBe("existing");
-  app.unmount();
-});
-
 test("reactive state preserves aliases, cycles, and non-plain object identity", () => {
   const notify = vi.fn();
   const shared = { count: 0 };
