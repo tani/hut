@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: 0BSD
+// Copyright (c) 2026 Masaya Taniguchi
+
 /**
  * @file Render JSX to DOM with synchronous components and reactive state.
  * Configure the automatic JSX transform with `jsxImportSource: "nova-jsx"`.

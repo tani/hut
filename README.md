@@ -78,3 +78,7 @@ mount(root, {
   notFound: () => "Page not found",
 });
 ```
+
+## License
+
+[BSD Zero Clause License (0BSD)](LICENSE)

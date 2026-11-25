@@ -6,6 +6,7 @@
   "bugs": {
     "url": "https://github.com/tani/nova-jsx/issues"
   },
+  "license": "0BSD",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tani/nova-jsx.git"
