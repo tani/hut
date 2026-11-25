@@ -21,7 +21,7 @@
 /** Groups children in a document fragment without adding a wrapper element. */
 export const Fragment = Symbol("Fragment");
 /** @typedef {string | number | bigint | boolean | symbol | Node | null | undefined | readonly Child[]} Child */
-/** @typedef {Record<string, unknown> & { children?: Child }} Props */
+/** @typedef {Record<string, unknown> & { children?: Child, preserve?: boolean }} Props */
 /** @typedef {{ key: unknown, events: Map<string, EventListener>, props: Props }} ElementMetadata */
 
 /**
@@ -40,6 +40,8 @@ export const formProps = ["value", "checked", "selected"];
  * Use `onClick` for events, `className` for CSS classes, and an object for styles.
  * Use stable, unique keys among siblings to preserve node identity when reordering.
  * A keyed component must return one element. Promises and thenables are unsupported.
+ * Set `preserve` on a host element to skip updates to it and its children when
+ * the node is reused. The flag is consumed by the renderer.
  *
  * @example
  * ```tsx
@@ -80,7 +82,8 @@ export function jsx(type, props, key) {
   /** @type {Map<string, EventListener>} */
   const events = new Map();
   for (const [name, value] of Object.entries(/** @type {Props} */ (props))) {
-    if (name === "children" || name === "key" || formProps.includes(name)) continue;
+    if (name === "children" || name === "key" || name === "preserve" || formProps.includes(name))
+      continue;
 
     if (name.startsWith("on") && typeof value === "function") {
       const event = name.slice(2).toLowerCase();
@@ -234,6 +237,9 @@ export function morph(oldNode, nextNode) {
     return oldNode;
   }
 
+  const after = metadata.get(nextNode);
+  if (after?.props.preserve === true) return oldNode;
+
   // Removing attributes changes the live collection.
   for (const { name } of Array.from(oldNode.attributes)) {
     if (!nextNode.hasAttribute(name)) oldNode.removeAttribute(name);
@@ -243,7 +249,6 @@ export function morph(oldNode, nextNode) {
   }
 
   const before = metadata.get(oldNode);
-  const after = metadata.get(nextNode);
   for (const [name, listener] of before?.events ?? []) {
     if (after?.events.get(name) !== listener) oldNode.removeEventListener(name, listener);
   }

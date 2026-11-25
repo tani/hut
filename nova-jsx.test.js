@@ -274,3 +274,76 @@ test("hash routing captures multiple named segments and discards partial matches
     app.unmount();
   }
 });
+
+test("preserve keeps an external host intact until normal updates resume", () => {
+  const root = document.createElement("main");
+  const originalClick = vi.fn();
+  const skippedClick = vi.fn();
+  const resumedClick = vi.fn();
+  const host = jsx(
+    "div",
+    { preserve: true, className: "initial", onClick: originalClick },
+    "terminal",
+  );
+  morphChildren(root, fragment([host, jsx("p", { children: "before" })]));
+  const terminal = document.createElement("span");
+  terminal.textContent = "external terminal";
+  host.append(terminal);
+  host.dataset.external = "true";
+  expect(host.hasAttribute("preserve")).toBe(false);
+
+  morphChildren(
+    root,
+    fragment([
+      jsx("div", { preserve: true, className: "skipped", onClick: skippedClick }, "terminal"),
+      jsx("p", { children: "after" }),
+    ]),
+  );
+  expect(root.firstChild).toBe(host);
+  expect(root.lastChild?.textContent).toBe("after");
+  expect(host.firstChild).toBe(terminal);
+  expect(host.className).toBe("initial");
+  expect(host.dataset.external).toBe("true");
+  host.click();
+  expect(originalClick).toHaveBeenCalledTimes(1);
+  expect(skippedClick).not.toHaveBeenCalled();
+
+  morphChildren(
+    root,
+    fragment(
+      jsx(
+        "div",
+        { preserve: false, className: "resumed", onClick: resumedClick, children: "managed" },
+        "terminal",
+      ),
+    ),
+  );
+  expect(root.firstChild).toBe(host);
+  expect(host.className).toBe("resumed");
+  expect(host.hasAttribute("data-external")).toBe(false);
+  expect(host.textContent).toBe("managed");
+  host.click();
+  expect(originalClick).toHaveBeenCalledTimes(1);
+  expect(skippedClick).not.toHaveBeenCalled();
+  expect(resumedClick).toHaveBeenCalledTimes(1);
+});
+
+test("preserve keeps canvas dimensions but allows replacement and removal", () => {
+  const root = document.createElement("main");
+  const canvas = jsx("canvas", { preserve: true, width: 640, height: 480 }, "preview");
+  morphChildren(root, fragment(canvas));
+  expect(canvas.width).toBe(640);
+  expect(canvas.height).toBe(480);
+
+  morphChildren(root, fragment(jsx("canvas", { preserve: true, width: 320 }, "preview")));
+  expect(root.firstChild).toBe(canvas);
+  expect(canvas.width).toBe(640);
+  expect(canvas.height).toBe(480);
+
+  const replacement = jsx("canvas", { preserve: true, width: 320 }, "new-preview");
+  morphChildren(root, fragment(replacement));
+  expect(root.firstChild).toBe(replacement);
+  expect(replacement.width).toBe(320);
+  morphChildren(root, fragment(null));
+  expect(root.childNodes).toHaveLength(0);
+});

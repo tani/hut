@@ -41,6 +41,22 @@ when you need to wait for the DOM, such as in a test. The promise rejects if
 rendering fails. `app.unmount()` clears the root and stops future renders and
 route updates.
 
+## Preserving external DOM
+
+Use `preserve` on elements managed by other code, such as an xterm.js host or a
+canvas. When the tag and key still match, nova-jsx reuses the element and skips
+updates to its attributes, listeners, and children.
+
+```jsx
+<section className={state.expanded ? "expanded" : "compact"}>
+  <div key="terminal" preserve />
+  <canvas key="preview" preserve />
+</section>
+```
+
+Removing `preserve` resumes updates. Changing the tag or key can replace the
+element. Omitting it from the view removes it as usual.
+
 ## Hash routing
 
 Pass a route table to `mount` in place of the view function. Route handlers receive

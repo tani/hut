@@ -11,7 +11,7 @@ export type Child =
   | undefined
   | readonly Child[];
 
-export type Props = Record<string, unknown> & { children?: Child };
+export type Props = Record<string, unknown> & { children?: Child; preserve?: boolean };
 
 export declare namespace JSX {
   type Element = Child;
