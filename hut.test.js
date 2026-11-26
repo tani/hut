@@ -496,9 +496,9 @@ test("h passes normalized children and optional props to components", () => {
 
 test("JSX runtime subpaths resolve to the public entry point", async () => {
   const [root, runtime, development] = await Promise.all([
-    import("hut"),
-    import("hut/jsx-runtime"),
-    import("hut/jsx-dev-runtime"),
+    import("@esfu/hut"),
+    import("@esfu/hut/jsx-runtime"),
+    import("@esfu/hut/jsx-dev-runtime"),
   ]);
   expect(Object.keys(root).sort()).toEqual([
     "Fragment",

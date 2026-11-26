@@ -1,5 +1,5 @@
 {
-  "name": "hut",
+  "name": "@esfu/hut",
   "version": "4.1.0",
   "description": "Hut renders JSX to DOM and routes by URL hash.",
   "homepage": "https://github.com/tani/hut#readme",

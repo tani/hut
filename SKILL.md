@@ -12,9 +12,9 @@ metadata:
 # Hut
 
 Hut creates browser DOM nodes from JSX and updates them from reactive
-state. Configure your automatic JSX transform with `hut` as its import
+state. Configure your automatic JSX transform with `@esfu/hut` as its import
 source. In TypeScript, set `jsx` to `"react-jsx"` and `jsxImportSource` to
-`"hut"`. In plain JavaScript, use `h` and `tags` to create elements directly.
+`"@esfu/hut"`. In plain JavaScript, use `h` and `tags` to create elements directly.
 The leading props object is optional: `h("p", "Hello")`, `tags.p("Hello")`,
 and `h(Fragment, tags.p("First"), tags.p("Second"))` need no placeholder.
 
@@ -36,12 +36,12 @@ and views derive the DOM from those inputs. Event handlers update the store.
   `URLPattern` pathname syntax, including optional segments and wildcards.
 
 ```tsx
-import { mount, NotFound } from "hut";
+import { mount, NotFound } from "@esfu/hut";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing app root");
 
-function Layout({ children }: { children: import("hut").Child }) {
+function Layout({ children }: { children: import("@esfu/hut").Child }) {
   return (
     <>
       <nav>

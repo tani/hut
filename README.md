@@ -7,17 +7,17 @@ no polyfills are bundled.
 ## Quick start
 
 ```sh
-npm install hut
+npm install @esfu/hut
 ```
 
 Set the import source for your toolchain's automatic JSX transform to
-`hut`. For TypeScript, add these options to `tsconfig.json`.
+`@esfu/hut`. For TypeScript, add these options to `tsconfig.json`.
 
 ```json
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "hut"
+    "jsxImportSource": "@esfu/hut"
   }
 }
 ```
@@ -26,7 +26,7 @@ With a `<main id="app"></main>` in your HTML, use this JSX module as the entry
 point.
 
 ```jsx
-import { mount } from "hut";
+import { mount } from "@esfu/hut";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing mount point");
@@ -64,7 +64,7 @@ of children and the same props as JSX, including `key`.
 Use `h(Fragment, ...children)` to group siblings without a wrapper.
 
 ```js
-import { h, tags } from "hut";
+import { h, tags } from "@esfu/hut";
 
 const list = tags.ul(
   { className: "items" },
@@ -108,7 +108,7 @@ Use the optional `[NotFound]` key to render a fallback. Unmatched paths render
 nothing by default.
 
 ```jsx
-import { mount, NotFound } from "hut";
+import { mount, NotFound } from "@esfu/hut";
 
 mount(root, {
   "/": () => "Home",
@@ -123,10 +123,10 @@ mount(root, {
 
 ## Package exports
 
-Import `mount`, `NotFound`, `h`, `tags`, and `Fragment` from `hut`.
+Import `mount`, `NotFound`, `h`, `tags`, and `Fragment` from `@esfu/hut`.
 The package also exports `jsx`, `jsxs`, and `jsxDEV` for JSX transforms.
-The automatic transform resolves these exports through `hut/jsx-runtime`
-or `hut/jsx-dev-runtime`.
+The automatic transform resolves these exports through `@esfu/hut/jsx-runtime`
+or `@esfu/hut/jsx-dev-runtime`.
 
 ## License
 
