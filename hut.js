@@ -3,12 +3,12 @@
 
 /**
  * @file Render JSX to DOM with synchronous components and reactive state.
- * Configure the automatic JSX transform with `jsxImportSource: "@esfu/hut"`.
+ * Configure the automatic JSX transform with `jsxImportSource: "@nodefu/hut"`.
  * In TypeScript, set `jsx: "react-jsx"` for this transform.
  *
  * @example
  * ```tsx
- * import { mount } from "@esfu/hut";
+ * import { mount } from "@nodefu/hut";
  *
  * const root = document.querySelector("main");
  * if (!root) throw new Error("Missing mount point");
@@ -397,7 +397,7 @@ export function morphChildren(parent, target) {
  *
  * @example
  * ```tsx
- * import { mount, NotFound } from "@esfu/hut";
+ * import { mount, NotFound } from "@nodefu/hut";
  *
  * // The hash #/items/a%20b?tab=details supplies "a b" as params.id.
  * mount(root, {
